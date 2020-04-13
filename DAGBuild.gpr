@@ -9,11 +9,14 @@ project DAGBuild is
     for Main use ("main.adb");
 
     package Builder is
+        for Executable ("main.adb") use "dagbuild.exe";
+        
         for Default_Switches ("Ada") use
         (
             "-g",       -- debug info
             "-gnatwa",  -- print all warnings
-            "-v"        -- verbose
+            "-v",       -- verbose
+            "-gnat12"   -- Ada 2012 standard
         );
     end Builder;
 
