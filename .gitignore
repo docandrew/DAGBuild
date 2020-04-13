@@ -3,3 +3,15 @@
 
 # Ada Library Information
 *.ali
+
+# DLLs
+*.DLLs
+
+# build stuff
+build/*
+
+# libs
+lib/*
+
+# exe
+*.exe

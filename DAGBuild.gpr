@@ -8,6 +8,15 @@ project DAGBuild is
     for Exec_Dir use ".";
     for Main use ("main.adb");
 
+    package Builder is
+        for Default_Switches ("Ada") use
+        (
+            "-g",       -- debug info
+            "-gnatwa",  -- print all warnings
+            "-v"        -- verbose
+        );
+    end Builder;
+
     package Linker is
         for Default_Switches ("Ada") use 
         (
