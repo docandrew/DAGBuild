@@ -64,7 +64,11 @@ package body DAGBuild.GUI is
         r.Clear;
     end Clear_Window;
 
+    -- statics for UI demo
     Show_Button : Boolean := False;
+    Red         : SDL.Video.Palettes.Colour_Component := 0;
+    Green       : SDL.Video.Palettes.Colour_Component := 0;
+    Blue        : SDL.Video.Palettes.Colour_Component := 0;
 
     -- Render screen elements
     procedure Render(st : in out DAGBuild.GUI.State.UIState)
@@ -120,6 +124,19 @@ package body DAGBuild.GUI is
                                              150);
         if Click then
             st.Done := True;
+        end if;
+
+        --Slider test
+        if DAGBuild.GUI.Widgets.Slider(st, 500, 40, 255, Integer(Red)) then
+            DAGBuild.Settings.Dark_BG := (Red, Green, Blue, 255);
+        end if;
+
+        if DAGBuild.GUI.Widgets.Slider(st, 550, 40, 255, Integer(Green)) then
+            DAGBuild.Settings.Dark_BG := (Red, Green, Blue, 255);
+        end if;
+
+        if DAGBuild.GUI.Widgets.Slider(st, 600, 40, 255, Integer(Blue)) then
+            DAGBuild.Settings.Dark_BG := (Red, Green, Blue, 255);
         end if;
         
         IMGUI_Finish(st);
