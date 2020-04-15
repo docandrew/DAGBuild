@@ -1,5 +1,6 @@
 
-with Interfaces.C; use Interfaces.C;
+-- with Interfaces.C; use Interfaces.C;
+with Ada.Text_IO;
 
 with SDL.Events.Events;
 with SDL.Events.Keyboards;
@@ -20,7 +21,11 @@ package body DAGBuild.GUI is
     procedure IMGUI_Start(st : in out DAGBuild.GUI.State.UIState)
     is
     begin
-        st.Hot_Item := DAGBuild.GUI.State.ID(0);
+        st.Hot_Item := DAGBuild.GUI.State.NO_ITEM;
+        st.Last_IDs := (others => DAGBuild.GUI.State.NO_ITEM);
+
+        -- Enter the first scope
+        DAGBuild.GUI.State.Enter_Scope(st);
     end IMGUI_Start;
 
     -- Finish a round
@@ -33,11 +38,20 @@ package body DAGBuild.GUI is
         use DAGBuild.GUI.State;
     begin
         if st.Mouse_Down = False then
+            --Ada.Text_IO.Put_Line("Setting active to NO_ITEM");
             st.Active_Item := NO_ITEM;
         else
             if st.Active_Item = NO_ITEM then
+                --Ada.Text_IO.Put_Line("Setting active to INVALID_ITEM");
                 st.Active_Item := INVALID_ITEM;
             end if;
+        end if;
+
+        DAGBuild.GUI.State.Exit_Scope(st);
+
+        -- when we finish, we should be back to the initial scope
+        if st.Curr_Scope /= NO_SCOPE then
+            raise DAGBuild.GUI.State.Invalid_Scope_Exception with "Called IMGUI_Finish with unclosed scopes";
         end if;
     end IMGUI_Finish;
 
@@ -50,27 +64,50 @@ package body DAGBuild.GUI is
         r.Clear;
     end Clear_Window;
 
+    Show_Button : Boolean := False;
+
     -- Render screen elements
     procedure Render(st : in out DAGBuild.GUI.State.UIState)
     is
-        Click : Boolean;
+        Click : Boolean := False;
     begin
         Clear_Window(st.Renderer, DAGBuild.Settings.Dark_BG);
 
         IMGUI_Start(st);
 
-        Click := DAGBuild.GUI.Widgets.Button(1,
-                                             st,
+        Click := DAGBuild.GUI.Widgets.Button(st,
                                              50,
                                              50);
 
-        Click := DAGBuild.GUI.Widgets.Button(2,
-                                             st,
+        if Click then
+            DAGBuild.Settings.Dark_BG := (255, 0, 0, 255);
+            Show_Button := True;
+        end if;
+
+        if Show_Button then
+            DAGBuild.GUI.State.Enter_Scope(st);
+                Click := DAGBuild.GUI.Widgets.Button(st,
+                                                     250,
+                                                     250);
+
+                if Click then
+                    DAGBuild.Settings.Dark_BG := (255, 255, 0, 255);
+                    Show_Button := False;
+                end if;
+
+                --Hidden_Button := (if Click then False else True);
+            DAGBuild.GUI.State.Exit_Scope(st);
+        end if;
+
+        Click := DAGBuild.GUI.Widgets.Button(st,
                                              150,
                                              50);
 
-        Click := DAGBuild.GUI.Widgets.Button(3,
-                                             st,
+        if Click then
+            DAGBuild.Settings.Dark_BG := (255, 0, 255, 255);
+        end if;
+
+        Click := DAGBuild.GUI.Widgets.Button(st,
                                              50,
                                              150);
 
@@ -78,8 +115,7 @@ package body DAGBuild.GUI is
             DAGBuild.Settings.Dark_BG := (0, 255, 255, 255);
         end if;
 
-        Click := DAGBuild.GUI.Widgets.Button(4,
-                                             st,
+        Click := DAGBuild.GUI.Widgets.Button(st,
                                              150,
                                              150);
         if Click then
@@ -89,7 +125,7 @@ package body DAGBuild.GUI is
         IMGUI_Finish(st);
 
         st.Renderer.Present;
-        delay 0.02; -- TODO: make a "delay until"
+        delay 0.01; -- TODO: make a "delay until"
     end Render;
 
     procedure Handle_Inputs(st : in out DAGBuild.GUI.State.UIState)
