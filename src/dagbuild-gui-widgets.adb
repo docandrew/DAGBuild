@@ -3,6 +3,10 @@ with Interfaces.C; use Interfaces.C;
 with Ada.Text_IO;
 
 with SDL;
+
+with SDL.Events;
+with SDL.Events.Keyboards;
+
 with SDL.Video.Palettes;
 with SDL.Video.Renderers;
 
@@ -46,6 +50,7 @@ package body DAGBuild.GUI.Widgets is
                     y   : SDL.Natural_Coordinate) return Boolean
     is
         use DAGBuild.GUI.State;
+        use SDL.Events.Keyboards;
 
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
         Scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
@@ -64,14 +69,31 @@ package body DAGBuild.GUI.Widgets is
         end if;
 
         --Ada.Text_IO.Put_Line("Active: " & st.Active_Item'Image & " Hot: " & st.Hot_Item'Image);
+        -- Keyboard Focus Handling
+
+        -- if no widget has keyboard focus, take it
+        if st.Kbd_Item = NO_ITEM then
+            st.Kbd_Item := id;
+            st.Kbd_Scope := Scope;
+        end if;
+
+        -- if we have keyboard focus, show it
+        if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+            Draw_Rect(st.Renderer,
+                        x-6,
+                        y-6,
+                        84,
+                        68,
+                        (255,0,0,255));
+        end if;
         
         -- Render a button shadow
         Draw_Rect(st.Renderer,
-                  x+2,
-                  y+2,
-                  64,
-                  48,
-                  (0,0,0,0));
+                    x+2,
+                    y+2,
+                    64,
+                    48,
+                    (0,0,0,0));
         
         if st.Hot_Item = id and st.Hot_Scope = Scope then
             if st.Active_Item = id and st.Active_Scope = Scope then
@@ -100,6 +122,34 @@ package body DAGBuild.GUI.Widgets is
                       48,
                       DAGBuild.Settings.Dark_Widget);
         end if;
+
+        -- Keyboard input processing
+        if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+            case st.Kbd_Pressed is
+                when SDL.Events.Keyboards.Code_Tab =>
+                    -- Lose focus, next widget will snag it.
+                    st.Kbd_Item := NO_ITEM;
+                    st.Kbd_Scope := NO_SCOPE;
+
+                    -- or make previous widget get it if we're doing shift+tab.
+                    if (st.Kbd_Modifier and Modifier_Shift) = Modifier_Shift then
+                        st.Kbd_Item := st.Last_Widget;
+                        st.Kbd_Scope := st.Last_Scope;
+                    end if;
+
+                    -- clear key
+                    st.Kbd_Pressed := NO_KEY;
+
+                when SDL.Events.Keyboards.Code_Return =>
+                    -- act like a press occurred.
+                    return True;
+                when others =>
+                    null;
+            end case;
+        end if;
+
+        st.Last_Widget := id;
+        st.Last_Scope := Scope;
 
         -- If button is hot and active, but button not up, then it was clicked
         if st.Mouse_Down = False and 

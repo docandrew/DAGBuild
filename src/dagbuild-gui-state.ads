@@ -1,6 +1,9 @@
 with Ada.Containers.Vectors;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
+with SDL.Events;
+with SDL.Events.Keyboards;
+
 with SDL.Video.Renderers;
 
 package DAGBuild.GUI.State is
@@ -23,7 +26,7 @@ package DAGBuild.GUI.State is
     -- out of scope.
     type Last_ID_List is array (1..Scope'Last) of ID;
 
-    -- State of the GUI
+    -- Low-level state of the GUI for rendering and input handling
     -- @field Renderer is the renderer for the app window
     -- @field Mouse_x is the x-position of the mouse
     -- @field Mouse_y is the y-position of the mouse
@@ -34,6 +37,12 @@ package DAGBuild.GUI.State is
     -- @field Active_Scope is the Scope of the widget we've interacted with
     -- @field Curr_Scope is the current scope we're in
     -- @field Last_IDs is the last ID we generated for a widget in a given scope
+    -- @field Kbd_Item is the widget with keyboard focus
+    -- @field Kbd_Scope is the scope of the widget with keyboard focus
+    -- @field Kbd_Pressed is the key that was pressed
+    -- @field Kbd_Modifier is shift, ctrl, alt, etc.
+    -- @field Last_Widget is the ID of the last widget handled
+    -- @field Last_Scope is the scope of the last widget handled
     -- @field Done is set to True if we are exiting the program.
     type UIState is
     record
@@ -49,9 +58,22 @@ package DAGBuild.GUI.State is
         Active_Scope    : Scope;
 
         Curr_Scope      : Scope := NO_SCOPE;
-        Last_IDs        : Last_ID_List := (others => NO_ITEM);  
+        Last_IDs        : Last_ID_List := (others => NO_ITEM);
+
+        Kbd_Item        : ID := NO_ITEM;
+        Kbd_Scope       : Scope := NO_SCOPE;
+
+        Kbd_Pressed     : SDL.Events.Keyboards.Key_Codes;
+        Kbd_Modifier    : SDL.Events.Keyboards.Key_Modifiers;
+
+        Last_Widget     : ID;
+        Last_Scope      : Scope;
+
         Done            : Boolean := False;
     end record;
+
+    -- Extra keyboard help
+    NO_KEY : constant SDL.Events.Keyboards.Key_Codes := SDL.Events.Keyboards.Key_Codes(0);
 
     -- Enter a new Widget scope
     procedure Enter_Scope(st : in out UIState);

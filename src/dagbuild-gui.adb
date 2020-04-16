@@ -171,6 +171,10 @@ package body DAGBuild.GUI is
 
                 when SDL.Events.Quit =>
                     st.Done := True;
+                
+                when SDL.Events.Keyboards.Key_Down =>
+                    st.Kbd_Pressed := Event.Keyboard.Key_Sym.Key_Code;
+                    st.Kbd_Modifier := Event.Keyboard.Key_Sym.Modifiers;
             
                 when SDL.Events.Keyboards.Key_Up =>
                     
