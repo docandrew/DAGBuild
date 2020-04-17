@@ -32,7 +32,7 @@ package body DAGBuild.GUI.Widgets is
         return True;
     end Region_Hit;
 
-    -- Draw a SDL Rectangle
+    -- Draw a filled SDL Rectangle
     procedure Draw_Rect(r : in out SDL.Video.Renderers.Renderer;
                         x : SDL.Coordinate;
                         y : SDL.Coordinate;
@@ -45,12 +45,24 @@ package body DAGBuild.GUI.Widgets is
         r.Fill (Rectangle => (x, y, w, h));
     end Draw_Rect;
 
+    -- Draw an outlined SDL Rectangle
+    procedure Outline_Rect(r : in out SDL.Video.Renderers.Renderer;
+                        x : SDL.Coordinate;
+                        y : SDL.Coordinate;
+                        w : SDL.Positive_Dimension;
+                        h : SDL.Positive_Dimension;
+                        c : SDL.Video.Palettes.Colour)
+    is
+    begin
+        r.Set_Draw_Colour (c);
+        r.Draw (Rectangle => (x, y, w, h));
+    end Outline_Rect;
+
     function Button(st  : in out DAGBuild.GUI.State.UIState;
                     x   : SDL.Natural_Coordinate;
                     y   : SDL.Natural_Coordinate) return Boolean
     is
         use DAGBuild.GUI.State;
-        use SDL.Events.Keyboards;
 
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
         Scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
@@ -77,14 +89,16 @@ package body DAGBuild.GUI.Widgets is
             st.Kbd_Scope := Scope;
         end if;
 
-        -- if we have keyboard focus, show it
+        -- if we have keyboard focus, show it and update heartbeat
         if st.Kbd_Item = id and st.Kbd_Scope = Scope then
-            Draw_Rect(st.Renderer,
-                        x-6,
-                        y-6,
-                        84,
-                        68,
-                        (255,0,0,255));
+            Outline_Rect(st.Renderer,
+                        x-2,
+                        y-2,
+                        70,
+                        54,
+                        (16#5C#,16#CF#,16#E6#,255));
+
+            st.Kbd_Heartbeat := True;
         end if;
         
         -- Render a button shadow
@@ -124,29 +138,34 @@ package body DAGBuild.GUI.Widgets is
         end if;
 
         -- Keyboard input processing
-        if st.Kbd_Item = id and st.Kbd_Scope = Scope then
-            case st.Kbd_Pressed is
-                when SDL.Events.Keyboards.Code_Tab =>
-                    -- Lose focus, next widget will snag it.
-                    st.Kbd_Item := NO_ITEM;
-                    st.Kbd_Scope := NO_SCOPE;
+        HandleKeys: declare
+            use SDL.Events.Keyboards;
+        begin
+            if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+                case st.Kbd_Pressed is
+                    when SDL.Events.Keyboards.Code_Tab =>
+                        -- Lose focus, next widget will snag it.
+                        st.Kbd_Item := NO_ITEM;
+                        st.Kbd_Scope := NO_SCOPE;
 
-                    -- or make previous widget get it if we're doing shift+tab.
-                    if (st.Kbd_Modifier and Modifier_Shift) = Modifier_Shift then
-                        st.Kbd_Item := st.Last_Widget;
-                        st.Kbd_Scope := st.Last_Scope;
-                    end if;
+                        -- or make previous widget get focus if we're doing shift+tab.
+                        if (st.Kbd_Modifier and Modifier_Shift) /= 0 then
+                            st.Kbd_Item := st.Last_Widget;
+                            st.Kbd_Scope := st.Last_Scope;
+                        end if;
 
-                    -- clear key
-                    st.Kbd_Pressed := NO_KEY;
+                        -- clear key
+                        st.Kbd_Pressed := NO_KEY;
 
-                when SDL.Events.Keyboards.Code_Return =>
-                    -- act like a press occurred.
-                    return True;
-                when others =>
-                    null;
-            end case;
-        end if;
+                    when SDL.Events.Keyboards.Code_Return =>
+                        -- act like a press occurred.
+                        st.Kbd_Pressed := NO_KEY;
+                        return True;
+                    when others =>
+                        null;
+                end case;
+            end if;
+        end HandleKeys;
 
         st.Last_Widget := id;
         st.Last_Scope := Scope;
@@ -184,6 +203,24 @@ package body DAGBuild.GUI.Widgets is
                 st.Active_Item := id;
                 st.Active_Scope := scope;
             end if;
+        end if;
+
+        -- if no widget has keyboard focus, take it
+        if st.Kbd_Item = NO_ITEM then
+            st.Kbd_Item := id;
+            st.Kbd_Scope := Scope;
+        end if;
+
+        -- if we have keyboard focus, show it and update heartbeat
+        if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+            Outline_Rect(st.Renderer,
+                        x-2,
+                        y-2,
+                        36,
+                        256+16+4,
+                        (16#5C#,16#CF#,16#E6#,255));
+
+            st.Kbd_Heartbeat := True;
         end if;
 
         -- Draw the scrollbar
@@ -230,6 +267,54 @@ package body DAGBuild.GUI.Widgets is
                 end if;
             end Update;
         end if;
+
+        -- If we have keyboard focus, process keys
+        HandleKeys: Declare
+            use SDL.Events.Keyboards;
+        begin    
+            if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+                --Ada.Text_IO.Put_Line("slider key: " & st.Kbd_Pressed'Image);
+
+                case st.Kbd_Pressed is
+                    when SDL.Events.Keyboards.Code_Tab =>
+                        -- Lose focus, next widget will snag it.
+                        st.Kbd_Item := NO_ITEM;
+                        st.Kbd_Scope := NO_SCOPE;
+
+                        -- or make previous widget get focus if we're doing shift+tab.
+                        if (st.Kbd_Modifier and Modifier_Shift) /= 0 then
+                            st.Kbd_Item := st.Last_Widget;
+                            st.Kbd_Scope := st.Last_Scope;
+                        end if;
+
+                        -- clear key
+                        st.Kbd_Pressed := NO_KEY;
+
+                    when SDL.Events.Keyboards.Code_Up =>
+                        if Val > 0 then
+                            Val := Val - 1;
+                        end if;
+
+                        st.Kbd_Pressed := NO_KEY;
+                        return True;
+
+                    when SDL.Events.Keyboards.Code_Down =>
+                        if Val < Max then
+                            Val := Val + 1;
+                        end if;
+
+                        st.Kbd_Pressed := NO_KEY;
+                        return True;
+
+                    when others =>
+                        --Ada.Text_IO.Put_Line("other: " & st.Kbd_Pressed'Image);
+                        null;
+                end case;
+            end if;
+        end HandleKeys;
+
+        st.Last_Widget := id;
+        st.Last_Scope := Scope;
 
         return False;
     end Slider;

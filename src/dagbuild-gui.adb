@@ -29,14 +29,14 @@ package body DAGBuild.GUI is
     end IMGUI_Start;
 
     -- Finish a round
-    -- If mouse isn't down, clear the active item.
-    -- If mouse is clicked with no widget active, mark no active item (-1) so we
-    -- don't "click" on something if we release the button on top of another
-    -- widget.
     procedure IMGUI_Finish(st : in out DAGBuild.GUI.State.UIState)
     is
         use DAGBuild.GUI.State;
     begin
+        -- If mouse isn't down, clear the active item.
+        -- If mouse is clicked with no widget active, mark no active item (-1) so we
+        -- don't "click" on something if we release the button on top of another
+        -- widget.
         if st.Mouse_Down = False then
             --Ada.Text_IO.Put_Line("Setting active to NO_ITEM");
             st.Active_Item := NO_ITEM;
@@ -46,6 +46,18 @@ package body DAGBuild.GUI is
                 st.Active_Item := INVALID_ITEM;
             end if;
         end if;
+
+        -- If we finished a round and the heartbeat wasn't updated because a
+        -- widget wasn't drawn, then remove the focus. If we don't do this, the
+        -- hidden widget will keep the focus forever.
+        if st.Kbd_Heartbeat = False then
+            st.Kbd_Item := NO_ITEM;
+            st.Kbd_Scope := NO_SCOPE;
+        end if;
+
+        -- Reset heartbeat and pressed key
+        st.Kbd_Heartbeat := False;
+        st.Kbd_Pressed := NO_KEY;
 
         DAGBuild.GUI.State.Exit_Scope(st);
 
@@ -175,6 +187,8 @@ package body DAGBuild.GUI is
                 when SDL.Events.Keyboards.Key_Down =>
                     st.Kbd_Pressed := Event.Keyboard.Key_Sym.Key_Code;
                     st.Kbd_Modifier := Event.Keyboard.Key_Sym.Modifiers;
+                    --Ada.Text_IO.Put_Line("key: " & st.Kbd_Pressed'Image);
+                    -- Ada.Text_IO.Put_Line("Shift: " & SDL.Events.Keyboards.Modifier_Shift'Image);
             
                 when SDL.Events.Keyboards.Key_Up =>
                     
