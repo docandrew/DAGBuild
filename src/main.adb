@@ -38,6 +38,7 @@ begin
     DAGBuild.GUI.Event_Loop(Window);
 
     Window.Finalize;
+    SDL.TTFs.Finalise;
     SDL.Finalise;
 end Main;
 

@@ -4,7 +4,7 @@ project DAGBuild is
 
     for Languages use ("Ada");
     for Object_Dir use "build";
-    for Source_Dirs use ("src", "../sdlada_lib/include/sdlada.debug");
+    for Source_Dirs use ("src", "../sdlada_lib_debug/include/sdlada.debug");
     for Exec_Dir use ".";
     for Main use ("main.adb");
 
@@ -16,6 +16,7 @@ project DAGBuild is
             "-g",       -- debug info
             "-gnatwa",  -- print all warnings
             "-v",       -- verbose
+            "-gnatW8",  -- UTF-8 character encoding
             "-gnat12"   -- Ada 2012 standard
         );
     end Builder;
@@ -23,7 +24,7 @@ project DAGBuild is
     package Linker is
         for Default_Switches ("Ada") use 
         (
-            "-Llib/", 
+            "-Llib/",
             "-lsdlada", "-lSDL2main", "-lSDL2", "-lSDL2_image",
             "-lSDL2_ttf", "-lmingw32", "-mwindows", "-mconsole"
         );

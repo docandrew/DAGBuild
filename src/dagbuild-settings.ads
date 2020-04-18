@@ -1,5 +1,6 @@
 
 with SDL;
+with SDL.TTFs;
 with SDL.Video.Palettes;
 with SDL.Video.Windows;
 
@@ -18,14 +19,14 @@ package DAGBuild.Settings is
     );
 
     -- Color defaults, overrideable in user prefs
-    Dark_BG         : SDL.Video.Palettes.Colour := (Red     => 16#23#,
-                                                    Green   => 16#28#,
-                                                    Blue    => 16#34#,
+    Dark_BG         : SDL.Video.Palettes.Colour := (Red     => 16#1F#,
+                                                    Green   => 16#24#,
+                                                    Blue    => 16#30#,
                                                     Alpha   => 16#FF#);
 
-    Dark_Widget     : SDL.Video.Palettes.Colour := (Red     => 16#70#,
-                                                    Green   => 16#7A#,
-                                                    Blue    => 16#8C#,
+    Dark_Widget     : SDL.Video.Palettes.Colour := (Red     => 16#23#,
+                                                    Green   => 16#28#,
+                                                    Blue    => 16#34#,
                                                     Alpha   => 16#FF#);
 
     Dark_Hot        : SDL.Video.Palettes.Colour := (Red     => 16#CB#,
@@ -43,9 +44,18 @@ package DAGBuild.Settings is
                                                     Blue    => 16#C6#,
                                                     Alpha   => 16#FF#);
 
+    Dark_Hot_Text   : SDL.Video.Palettes.Colour := (Red     => 16#BA#,
+                                                    Green   => 16#E6#,
+                                                    Blue    => 16#7E#,
+                                                    Alpha   => 16#FF#);
+
     Dark_Focus      : SDL.Video.Palettes.Colour := (Red     => 16#5C#,
                                                     Green   => 16#CF#,
                                                     Blue    => 16#E6#,
                                                     Alpha   => 16#FF#);
+
+    --Font            : String := "Fira Code Light Nerd Font Complete Mono Windows Compatible.ttf";
+    Font            : String := "NotoEmoji-Regular.ttf";
+    Font_Size       : SDL.TTFs.Point_Sizes := 24;
 
 end DAGBuild.Settings;

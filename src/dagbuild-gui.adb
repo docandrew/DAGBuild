@@ -1,19 +1,28 @@
 
 -- with Interfaces.C; use Interfaces.C;
+with Ada.Strings.UTF_Encoding;
+with Ada.Strings.UTF_Encoding.Strings;
 with Ada.Text_IO;
+with Ada.Wide_Text_IO;
 
 with SDL.Events.Events;
 with SDL.Events.Keyboards;
 with SDL.Events.Mice;
 
+with SDL.TTFs.Makers;
+
 with SDL.Video.Palettes;
 with SDL.Video.Renderers;
 with SDL.Video.Renderers.Makers;
+with SDL.Video.Surfaces;
 
+with DAGBuild.GUI.Emoji;
 with DAGBuild.GUI.State;
 with DAGBuild.GUI.Widgets;
 
 with DAGBuild.Settings;
+
+pragma Wide_Character_Encoding(UTF8);
 
 package body DAGBuild.GUI is
 
@@ -209,12 +218,23 @@ package body DAGBuild.GUI is
 
     procedure Event_Loop(Window : in out SDL.Video.Windows.Window)
     is
-        GUI_State   : DAGBuild.GUI.State.UIState;       
+        GUI_State       : DAGBuild.GUI.State.UIState;
+        Font            : SDL.TTFs.Fonts;
+        Text_Surface    : SDL.Video.Surfaces.Surface;
+        Window_Surface  : SDL.Video.Surfaces.Surface := Window.Get_Surface;
     begin
         -- Create hardware renderer if available
         SDL.Video.Renderers.Makers.Create(GUI_State.Renderer, Window);
 
+        -- Load Font used by widgets
+        SDL.TTFs.Makers.Create(Font, DAGBuild.Settings.Font, DAGBuild.Settings.Font_Size);
+
+        Text_Surface := Font.Render_UTF8_Solid(Text => DAGBuild.GUI.Emoji.Smiley_Grin,
+                                            Colour => DAGBuild.Settings.Dark_Text);
+
         loop
+            Window_Surface.Blit(Source => Text_Surface);
+            Window.Update_Surface;
             Render(GUI_State);
             Handle_Inputs(GUI_State);
 
