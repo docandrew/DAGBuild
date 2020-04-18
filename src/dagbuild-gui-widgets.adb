@@ -96,7 +96,7 @@ package body DAGBuild.GUI.Widgets is
                         y-2,
                         70,
                         54,
-                        (16#5C#,16#CF#,16#E6#,255));
+                        DAGBuild.Settings.Dark_Focus);
 
             st.Kbd_Heartbeat := True;
         end if;

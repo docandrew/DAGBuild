@@ -18,29 +18,34 @@ package DAGBuild.Settings is
     );
 
     -- Color defaults, overrideable in user prefs
-    Dark_BG         : SDL.Video.Palettes.Colour := (Red    => 16#23#,
-                                                    Green  => 16#28#,
-                                                    Blue   => 16#34#,
-                                                    Alpha  => 16#FF#);
+    Dark_BG         : SDL.Video.Palettes.Colour := (Red     => 16#23#,
+                                                    Green   => 16#28#,
+                                                    Blue    => 16#34#,
+                                                    Alpha   => 16#FF#);
 
-    Dark_Widget     : SDL.Video.Palettes.Colour := (Red    => 16#70#,
-                                                    Green  => 16#7A#,
-                                                    Blue   => 16#8C#,
-                                                    Alpha  => 16#FF#);
+    Dark_Widget     : SDL.Video.Palettes.Colour := (Red     => 16#70#,
+                                                    Green   => 16#7A#,
+                                                    Blue    => 16#8C#,
+                                                    Alpha   => 16#FF#);
 
-    Dark_Hot        : SDL.Video.Palettes.Colour := (Red    => 16#CB#,
-                                                    Green  => 16#CC#,
-                                                    Blue   => 16#C6#,
-                                                    Alpha  => 16#FF#);
+    Dark_Hot        : SDL.Video.Palettes.Colour := (Red     => 16#CB#,
+                                                    Green   => 16#CC#,
+                                                    Blue    => 16#C6#,
+                                                    Alpha   => 16#FF#);
 
-    Dark_Active     : SDL.Video.Palettes.Colour := (Red    => 16#FF#,
-                                                    Green  => 16#CC#,
-                                                    Blue   => 16#66#,
-                                                    Alpha  => 16#FF#);
+    Dark_Active     : SDL.Video.Palettes.Colour := (Red     => 16#FF#,
+                                                    Green   => 16#CC#,
+                                                    Blue    => 16#66#,
+                                                    Alpha   => 16#FF#);
 
-    Dark_Text       : SDL.Video.Palettes.Colour := (Red    => 16#CB#,
-                                                    Green  => 16#CC#,
-                                                    Blue   => 16#C6#,
-                                                    Alpha  => 16#FF#);
+    Dark_Text       : SDL.Video.Palettes.Colour := (Red     => 16#CB#,
+                                                    Green   => 16#CC#,
+                                                    Blue    => 16#C6#,
+                                                    Alpha   => 16#FF#);
+
+    Dark_Focus      : SDL.Video.Palettes.Colour := (Red     => 16#5C#,
+                                                    Green   => 16#CF#,
+                                                    Blue    => 16#E6#,
+                                                    Alpha   => 16#FF#);
 
 end DAGBuild.Settings;
