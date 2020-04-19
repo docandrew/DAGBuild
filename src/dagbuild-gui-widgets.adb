@@ -1,6 +1,6 @@
 with Interfaces.C; use Interfaces.C;
 
-with Ada.Text_IO;
+--with Ada.Text_IO;
 
 with SDL;
 
@@ -8,7 +8,11 @@ with SDL.Events;
 with SDL.Events.Keyboards;
 
 with SDL.Video.Palettes;
+with SDL.Video.Rectangles;
 with SDL.Video.Renderers;
+with SDL.Video.Surfaces;
+with SDL.Video.Textures;
+with SDL.Video.Textures.Makers;
 
 with DAGBuild.Settings;
 
@@ -33,34 +37,75 @@ package body DAGBuild.GUI.Widgets is
     end Region_Hit;
 
     -- Draw a filled SDL Rectangle
-    procedure Draw_Rect(r : in out SDL.Video.Renderers.Renderer;
-                        x : SDL.Coordinate;
-                        y : SDL.Coordinate;
-                        w : SDL.Positive_Dimension;
-                        h : SDL.Positive_Dimension;
-                        c : SDL.Video.Palettes.Colour)
+    procedure Draw_Rect (r      : in out SDL.Video.Renderers.Renderer;
+                         x      : SDL.Coordinate;
+                         y      : SDL.Coordinate;
+                         w      : SDL.Positive_Dimension;
+                         h      : SDL.Positive_Dimension;
+                         Color  : SDL.Video.Palettes.Colour)
     is
     begin
-        r.Set_Draw_Colour (c);
+        r.Set_Draw_Colour (Color);
         r.Fill (Rectangle => (x, y, w, h));
     end Draw_Rect;
 
     -- Draw an outlined SDL Rectangle
-    procedure Outline_Rect(r : in out SDL.Video.Renderers.Renderer;
-                        x : SDL.Coordinate;
-                        y : SDL.Coordinate;
-                        w : SDL.Positive_Dimension;
-                        h : SDL.Positive_Dimension;
-                        c : SDL.Video.Palettes.Colour)
+    procedure Outline_Rect (r       : in out SDL.Video.Renderers.Renderer;
+                            x       : SDL.Coordinate;
+                            y       : SDL.Coordinate;
+                            w       : SDL.Positive_Dimension;
+                            h       : SDL.Positive_Dimension;
+                            Color   : SDL.Video.Palettes.Colour)
     is
     begin
-        r.Set_Draw_Colour (c);
+        r.Set_Draw_Colour (Color);
         r.Draw (Rectangle => (x, y, w, h));
     end Outline_Rect;
 
-    function Button(st  : in out DAGBuild.GUI.State.UIState;
-                    x   : SDL.Natural_Coordinate;
-                    y   : SDL.Natural_Coordinate) return Boolean
+    -- Draw text at a specified location 
+    -- @field x is top-left corner
+    -- @field y is top-left corner
+    -- @field w is the width of the drawn text (output)
+    -- @field h is the height of the drawn text (output)
+    -- @field Colour is the color of the text to draw
+    procedure Draw_Text (r      : in out SDL.Video.Renderers.Renderer;
+                         Text   : String;
+                         x      : SDL.Coordinate;
+                         y      : SDL.Coordinate;
+                         w      : out SDL.Positive_Dimension;
+                         h      : out SDL.Positive_Dimension;
+                         Color  : SDL.Video.Palettes.Colour)
+    is
+        Text_Surface    : SDL.Video.Surfaces.Surface;
+        Text_Texture    : SDL.Video.Textures.Texture;
+        Text_Rect       : SDL.Video.Rectangles.Rectangle;
+    begin
+        Text_Surface := DAG_Font.Render_UTF8_Solid (Text    => Text,
+                                                    Colour  => Color);
+
+        SDL.Video.Textures.Makers.Create (Tex       => Text_Texture, 
+                                          Renderer  => r,
+                                          Surface   => Text_Surface);
+
+        Text_Rect.X := x;
+        Text_Rect.Y := y;
+        Text_Rect.Width := Text_Texture.Get_Size.Width;
+        Text_Rect.Height := Text_Texture.Get_Size.Height;
+        w := Text_Rect.Width;
+        h := Text_Rect.Height;
+
+        -- Blit text from the texture into the renderer
+        r.Copy (Copy_From   => Text_Texture,
+                To          => Text_Rect);
+
+        --Text_Surface.Finalize;
+        --Text_Texture.Finalize;
+    end Draw_Text;
+
+    -- Draw a button, return True if clicked, False otherwise
+    function Button (st  : in out DAGBuild.GUI.State.UIState;
+                     x   : SDL.Natural_Coordinate;
+                     y   : SDL.Natural_Coordinate) return Boolean
     is
         use DAGBuild.GUI.State;
 
@@ -247,19 +292,20 @@ package body DAGBuild.GUI.Widgets is
         -- Update slider position
         if st.Active_Item = id and st.Active_Scope = Scope then
             Update: declare
-                Mouse_Pos : SDL.Natural_Coordinate := st.Mouse_y - (y + 8);
+                Mouse_Pos : Integer := Integer(st.Mouse_y) - 
+                                        Integer(y + 8);
                 New_Val : Integer;
             begin
 
-                -- if Mouse_Pos < 0 then
-                --     Mouse_Pos := 0;
-                -- end if;
+                if Mouse_Pos < 0 then
+                    Mouse_Pos := 0;
+                end if;
 
                 if Mouse_Pos > 255 then
                     Mouse_Pos := 255;
                 end if;
 
-                New_Val := (Integer(Mouse_Pos) * Max) / 255;
+                New_Val := (Mouse_Pos * Max) / 255;
 
                 if Val /= New_Val then
                     Val := New_Val;
@@ -318,5 +364,30 @@ package body DAGBuild.GUI.Widgets is
 
         return False;
     end Slider;
+
+    -- Draw a label with the given text a specific location
+    procedure Label(st      : in out DAGBuild.GUI.State.UIState;
+                    Text    : String;
+                    x       : SDL.Natural_Coordinate;
+                    y       : SDL.Natural_Coordinate)
+    is
+        w : SDL.Dimension;
+        h : SDL.Dimension;
+    begin
+        Draw_Rect (st.Renderer,
+                   x,
+                   y,
+                   140,
+                   32,
+                   DAGBuild.Settings.Dark_Widget);
+
+        Draw_Text (r => st.Renderer,
+                   Text => Text, 
+                   x => x+4,
+                   y => y+4,
+                   w => w,
+                   h => h,
+                   Color => DAGBuild.Settings.Dark_Text);
+    end Label;
 
 end DAGBuild.GUI.Widgets;

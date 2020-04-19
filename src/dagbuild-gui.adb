@@ -8,15 +8,18 @@ with Ada.Wide_Text_IO;
 with SDL.Events.Events;
 with SDL.Events.Keyboards;
 with SDL.Events.Mice;
+with SDl.Hints;
 
 with SDL.TTFs.Makers;
 
 with SDL.Video.Palettes;
 with SDL.Video.Renderers;
 with SDL.Video.Renderers.Makers;
-with SDL.Video.Surfaces;
+--with SDL.Video.Surfaces;
+with SDL.Video.Textures;
+--with SDL.Video.Textures.Makers;
 
-with DAGBuild.GUI.Emoji;
+--with DAGBuild.GUI.Emoji;
 with DAGBuild.GUI.State;
 with DAGBuild.GUI.Widgets;
 
@@ -95,14 +98,19 @@ package body DAGBuild.GUI is
     procedure Render(st : in out DAGBuild.GUI.State.UIState)
     is
         Click : Boolean := False;
+
+        package Widgets renames DAGBuild.GUI.Widgets;
     begin
         Clear_Window(st.Renderer, DAGBuild.Settings.Dark_BG);
 
         IMGUI_Start(st);
 
-        Click := DAGBuild.GUI.Widgets.Button(st,
-                                             50,
-                                             50);
+        --Window_Surface.Blit(Source => Text_Surface);
+        --Window.Update_Surface;
+
+        Click := Widgets.Button (st,
+                                 50,
+                                 50);
 
         if Click then
             DAGBuild.Settings.Dark_BG := (255, 0, 0, 255);
@@ -124,41 +132,43 @@ package body DAGBuild.GUI is
             DAGBuild.GUI.State.Exit_Scope(st);
         end if;
 
-        Click := DAGBuild.GUI.Widgets.Button(st,
-                                             150,
-                                             50);
+        Click := Widgets.Button (st,
+                                 150,
+                                 50);
 
         if Click then
             DAGBuild.Settings.Dark_BG := (255, 0, 255, 255);
         end if;
 
-        Click := DAGBuild.GUI.Widgets.Button(st,
-                                             50,
-                                             150);
+        Click := Widgets.Button (st,
+                                 50,
+                                 150);
 
         if Click then
             DAGBuild.Settings.Dark_BG := (0, 255, 255, 255);
         end if;
 
-        Click := DAGBuild.GUI.Widgets.Button(st,
-                                             150,
-                                             150);
+        Click := Widgets.Button (st,
+                                 150,
+                                 150);
         if Click then
             st.Done := True;
         end if;
 
         --Slider test
-        if DAGBuild.GUI.Widgets.Slider(st, 500, 40, 255, Integer(Red)) then
+        if Widgets.Slider(st, 500, 40, 255, Integer(Red)) then
             DAGBuild.Settings.Dark_BG := (Red, Green, Blue, 255);
         end if;
 
-        if DAGBuild.GUI.Widgets.Slider(st, 550, 40, 255, Integer(Green)) then
+        if Widgets.Slider(st, 550, 40, 255, Integer(Green)) then
             DAGBuild.Settings.Dark_BG := (Red, Green, Blue, 255);
         end if;
 
-        if DAGBuild.GUI.Widgets.Slider(st, 600, 40, 255, Integer(Blue)) then
+        if Widgets.Slider(st, 600, 40, 255, Integer(Blue)) then
             DAGBuild.Settings.Dark_BG := (Red, Green, Blue, 255);
         end if;
+
+        Widgets.Label(st, "Hello DAGBuild!", 50, 300);
         
         IMGUI_Finish(st);
 
@@ -216,25 +226,22 @@ package body DAGBuild.GUI is
         
     end Handle_Inputs;
 
+    -- Main rendering and input handling loop
     procedure Event_Loop(Window : in out SDL.Video.Windows.Window)
     is
         GUI_State       : DAGBuild.GUI.State.UIState;
-        Font            : SDL.TTFs.Fonts;
-        Text_Surface    : SDL.Video.Surfaces.Surface;
-        Window_Surface  : SDL.Video.Surfaces.Surface := Window.Get_Surface;
     begin
+        SDL.Hints.Set(SDL.Hints.Render_Scale_Quality, "1");
+
         -- Create hardware renderer if available
         SDL.Video.Renderers.Makers.Create(GUI_State.Renderer, Window);
 
         -- Load Font used by widgets
-        SDL.TTFs.Makers.Create(Font, DAGBuild.Settings.Font, DAGBuild.Settings.Font_Size);
-
-        Text_Surface := Font.Render_UTF8_Solid(Text => DAGBuild.GUI.Emoji.Smiley_Grin,
-                                            Colour => DAGBuild.Settings.Dark_Text);
+        SDL.TTFs.Makers.Create (Font        => DAGBuild.GUI.Widgets.DAG_Font, 
+                                File_Name   => DAGBuild.Settings.Font_Name,
+                                Point_Size  => DAGBuild.Settings.Font_Size);
 
         loop
-            Window_Surface.Blit(Source => Text_Surface);
-            Window.Update_Surface;
             Render(GUI_State);
             Handle_Inputs(GUI_State);
 

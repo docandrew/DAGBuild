@@ -55,7 +55,7 @@ package DAGBuild.Settings is
                                                     Alpha   => 16#FF#);
 
     --Font            : String := "Fira Code Light Nerd Font Complete Mono Windows Compatible.ttf";
-    Font            : String := "NotoEmoji-Regular.ttf";
-    Font_Size       : SDL.TTFs.Point_Sizes := 24;
+    Font_Name       : String := "FiraCode-Regular.ttf";
+    Font_Size       : SDL.TTFs.Point_Sizes := 14;
 
 end DAGBuild.Settings;
