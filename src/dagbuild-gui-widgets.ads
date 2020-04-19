@@ -1,3 +1,4 @@
+with Ada.Strings.Unbounded;
 
 with SDL.TTFs;
 
@@ -8,9 +9,10 @@ package DAGBuild.GUI.Widgets is
     DAG_Font        : SDL.TTFs.Fonts;
 
     -- Draw a button, return True if clicked
-    function Button(st : in out DAGBuild.GUI.State.UIState;
-                    x  : SDL.Natural_Coordinate;
-                    y  : SDL.Natural_Coordinate) return Boolean;
+    function Button(st      : in out DAGBuild.GUI.State.UIState;
+                    x       : SDL.Natural_Coordinate;
+                    y       : SDL.Natural_Coordinate;
+                    Label   : String := "") return Boolean;
 
     -- Draw a slider, return True if value was updated
     -- @param Max is the maximum value this slider can represent

@@ -43,6 +43,7 @@ package body DAGBuild.GUI is
     -- Finish a round
     procedure IMGUI_Finish(st : in out DAGBuild.GUI.State.UIState)
     is
+        use ASCII;
         use DAGBuild.GUI.State;
     begin
         -- If mouse isn't down, clear the active item.
@@ -70,6 +71,7 @@ package body DAGBuild.GUI is
         -- Reset heartbeat and pressed key
         st.Kbd_Heartbeat := False;
         st.Kbd_Pressed := NO_KEY;
+        st.Kbd_Char := ASCII.NUL;
 
         DAGBuild.GUI.State.Exit_Scope(st);
 
@@ -110,7 +112,8 @@ package body DAGBuild.GUI is
 
         Click := Widgets.Button (st,
                                  50,
-                                 50);
+                                 50,
+                                 "One");
 
         if Click then
             DAGBuild.Settings.Dark_BG := (255, 0, 0, 255);
@@ -121,7 +124,8 @@ package body DAGBuild.GUI is
             DAGBuild.GUI.State.Enter_Scope(st);
                 Click := DAGBuild.GUI.Widgets.Button(st,
                                                      250,
-                                                     250);
+                                                     250,
+                                                     "???");
 
                 if Click then
                     DAGBuild.Settings.Dark_BG := (255, 255, 0, 255);
@@ -134,7 +138,8 @@ package body DAGBuild.GUI is
 
         Click := Widgets.Button (st,
                                  150,
-                                 50);
+                                 50,
+                                 "Two");
 
         if Click then
             DAGBuild.Settings.Dark_BG := (255, 0, 255, 255);
@@ -142,7 +147,8 @@ package body DAGBuild.GUI is
 
         Click := Widgets.Button (st,
                                  50,
-                                 150);
+                                 150,
+                                 "Three");
 
         if Click then
             DAGBuild.Settings.Dark_BG := (0, 255, 255, 255);
@@ -150,7 +156,8 @@ package body DAGBuild.GUI is
 
         Click := Widgets.Button (st,
                                  150,
-                                 150);
+                                 150,
+                                 "Quit");
         if Click then
             st.Done := True;
         end if;
@@ -179,7 +186,8 @@ package body DAGBuild.GUI is
     procedure Handle_Inputs(st : in out DAGBuild.GUI.State.UIState)
     is
         use type SDL.Events.Mice.Buttons;
-
+        use ASCII;
+        
         Event       : SDL.Events.Events.Events;
     begin
         while SDL.Events.Events.Poll(Event) loop
@@ -206,6 +214,7 @@ package body DAGBuild.GUI is
                 when SDL.Events.Keyboards.Key_Down =>
                     st.Kbd_Pressed := Event.Keyboard.Key_Sym.Key_Code;
                     st.Kbd_Modifier := Event.Keyboard.Key_Sym.Modifiers;
+                    st.Kbd_Char := ASCII.NUL;
                     --Ada.Text_IO.Put_Line("key: " & st.Kbd_Pressed'Image);
                     -- Ada.Text_IO.Put_Line("Shift: " & SDL.Events.Keyboards.Modifier_Shift'Image);
             

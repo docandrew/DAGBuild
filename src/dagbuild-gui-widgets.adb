@@ -80,8 +80,15 @@ package body DAGBuild.GUI.Widgets is
         Text_Texture    : SDL.Video.Textures.Texture;
         Text_Rect       : SDL.Video.Rectangles.Rectangle;
     begin
-        Text_Surface := DAG_Font.Render_UTF8_Solid (Text    => Text,
-                                                    Colour  => Color);
+
+        if Text'Length = 0 then
+            w := 1;
+            h := 1;
+            return;
+        end if;
+
+        Text_Surface := DAG_Font.Render_UTF_8_Blended (Text    => Text,
+                                                      Colour  => Color);
 
         SDL.Video.Textures.Makers.Create (Tex       => Text_Texture, 
                                           Renderer  => r,
@@ -103,15 +110,17 @@ package body DAGBuild.GUI.Widgets is
     end Draw_Text;
 
     -- Draw a button, return True if clicked, False otherwise
-    function Button (st  : in out DAGBuild.GUI.State.UIState;
-                     x   : SDL.Natural_Coordinate;
-                     y   : SDL.Natural_Coordinate) return Boolean
+    function Button (st     : in out DAGBuild.GUI.State.UIState;
+                     x      : SDL.Natural_Coordinate;
+                     y      : SDL.Natural_Coordinate;
+                     Label  : String := "") return Boolean
     is
         use DAGBuild.GUI.State;
 
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
         Scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
-
+        Dummy_w : SDL.Positive_Dimension;
+        Dummy_h : SDL.Positive_Dimension;
     begin
         --Ada.Text_IO.Put_Line("Creating new button with ID: " & id'Image & " scope: " & scope'Image);
 
@@ -181,6 +190,15 @@ package body DAGBuild.GUI.Widgets is
                       48,
                       DAGBuild.Settings.Dark_Widget);
         end if;
+
+        -- Draw Label
+        Draw_Text (r => st.Renderer,
+                   Text => Label,
+                   x => x+4,
+                   y => y+8,
+                   w => Dummy_w,
+                   h => Dummy_h,
+                   Color => DAGBuild.Settings.Dark_Text);
 
         -- Keyboard input processing
         HandleKeys: declare
@@ -384,10 +402,43 @@ package body DAGBuild.GUI.Widgets is
         Draw_Text (r => st.Renderer,
                    Text => Text, 
                    x => x+4,
-                   y => y+4,
+                   y => y+8,
                    w => w,
                    h => h,
                    Color => DAGBuild.Settings.Dark_Text);
     end Label;
+
+    -- Draw a label with the given text a specific location
+    -- @TODO: make Display_Length, Max_Length work with a number of chars
+    function Text_Field (st              : in out DAGBuild.GUI.State.UIState;
+                         Text            : in out Ada.Strings.Unbounded.Unbounded_String;
+                         x               : SDL.Natural_Coordinate;
+                         y               : SDL.Natural_Coordinate;
+                         Display_Length  : SDL.Positive_Dimension;
+                         Max_Length      : Natural) return Boolean
+    is
+        package UBS renames Ada.Strings.Unbounded;
+
+        w : SDL.Dimension;
+        h : SDL.Dimension;
+    begin
+        Draw_Rect (st.Renderer,
+                   x,
+                   y,
+                   140,
+                   32,
+                   DAGBuild.Settings.Dark_Widget);
+
+        -- Clip the number of characters by what we can actually display
+        Draw_Text (r => st.Renderer,
+                   Text => UBS.To_String(UBS.Unbounded_Slice(Text, 1, UBS.Length(Text))),
+                   x => x+4,
+                   y => y+8,
+                   w => w,
+                   h => h,
+                   Color => DAGBuild.Settings.Dark_Text);
+
+        return True;
+    end Text_Field;
 
 end DAGBuild.GUI.Widgets;

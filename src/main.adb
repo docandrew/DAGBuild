@@ -6,8 +6,13 @@
 -- with Interfaces.C; use Interfaces.C;
 
 with SDL;
+
 with SDL.Events.Events;
+
+with SDL.Inputs.Keyboards;
+
 with SDL.TTFs.Makers;
+
 with SDL.Video.Windows;
 with SDL.Video.Windows.Makers;
 

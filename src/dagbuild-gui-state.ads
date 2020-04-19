@@ -43,6 +43,8 @@ package DAGBuild.GUI.State is
     -- @field Kbd_Modifier is shift, ctrl, alt, etc.
     -- @field Kbd_Heartbeat lets us know if the previously focused widget was
     --  drawn.
+    -- @field Kbd_Char is a character entered
+    -- @field Kbd_Text should be true if text editing is enabled for active widget.
     -- @field Last_Widget is the ID of the last widget handled
     -- @field Last_Scope is the scope of the last widget handled
     -- @field Done is set to True if we are exiting the program.
@@ -69,6 +71,9 @@ package DAGBuild.GUI.State is
         Kbd_Modifier    : SDL.Events.Keyboards.Key_Modifiers;
 
         Kbd_Heartbeat   : Boolean := False;
+
+        Kbd_Char        : Character;
+        Kbd_Text        : Boolean := False;
 
         Last_Widget     : ID;
         Last_Scope      : Scope;
