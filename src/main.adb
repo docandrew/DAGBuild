@@ -38,7 +38,7 @@ begin
                                     Title       => "DAGBuild v0.0.1",
                                     Position    => Init_Pos,
                                     Size        => Init_Size,
-                                    Flags       => 0);
+                                    Flags       => SDL.Video.Windows.Resizable);
 
     DAGBuild.GUI.Event_Loop(Window);
 
