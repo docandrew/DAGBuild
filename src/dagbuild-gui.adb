@@ -1,28 +1,24 @@
 
--- with Interfaces.C; use Interfaces.C;
-with Ada.Strings.UTF_Encoding;
-with Ada.Strings.UTF_Encoding.Strings;
+with Interfaces.C;
+with Ada.Strings.Unbounded;
 with Ada.Text_IO;
-with Ada.Wide_Text_IO;
 
 with SDL.Events.Events;
 with SDL.Events.Keyboards;
 with SDL.Events.Mice;
-with SDl.Hints;
-
+with SDL.Hints;
+with SDL.Inputs.Keyboards;
 with SDL.TTFs.Makers;
-
 with SDL.Video.Palettes;
 with SDL.Video.Renderers;
 with SDL.Video.Renderers.Makers;
 --with SDL.Video.Surfaces;
-with SDL.Video.Textures;
+--with SDL.Video.Textures;
 --with SDL.Video.Textures.Makers;
 
 --with DAGBuild.GUI.Emoji;
 with DAGBuild.GUI.State;
 with DAGBuild.GUI.Widgets;
-
 with DAGBuild.Settings;
 
 pragma Wide_Character_Encoding(UTF8);
@@ -95,6 +91,8 @@ package body DAGBuild.GUI is
     Red         : SDL.Video.Palettes.Colour_Component := 0;
     Green       : SDL.Video.Palettes.Colour_Component := 0;
     Blue        : SDL.Video.Palettes.Colour_Component := 0;
+    Clear_Color : SDL.Video.Palettes.Colour := DAGBuild.Settings.Default_Dark.Editor_background;
+    My_Str      : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String("Input here");
 
     -- Render screen elements
     procedure Render(st : in out DAGBuild.GUI.State.UIState)
@@ -102,7 +100,6 @@ package body DAGBuild.GUI is
         package Widgets renames DAGBuild.GUI.Widgets;
 
         Click : Boolean := False;
-        Clear_Color : SDL.Video.Palettes.Colour := st.Theme.Editor_background;
     begin
         Clear_Window(st.Renderer, Clear_Color);
 
@@ -129,7 +126,7 @@ package body DAGBuild.GUI is
                                                      "???");
 
                 if Click then
-                    Clear_Color := (255, 255, 0, 255);
+                    Clear_Color := st.Theme.InputValidation_errorBackground;
                     Show_Button := False;
                 end if;
 
@@ -143,7 +140,7 @@ package body DAGBuild.GUI is
                                  "Two");
 
         if Click then
-            Clear_Color := (255, 0, 255, 255);
+            Clear_Color := st.Theme.InputValidation_infoBackground;
         end if;
 
         Click := Widgets.Button (st,
@@ -152,7 +149,7 @@ package body DAGBuild.GUI is
                                  "Three");
 
         if Click then
-            Clear_Color := (0, 255, 255, 255);
+            Clear_Color := st.Theme.InputValidation_warningBackground;
         end if;
 
         Click := Widgets.Button (st,
@@ -177,6 +174,8 @@ package body DAGBuild.GUI is
         end if;
 
         Widgets.Label(st, "Hello DAGBuild!", 50, 300);
+
+        Click := Widgets.Text_Field(st, My_Str, 50, 350, 20, 20);
         
         IMGUI_Finish(st);
 
@@ -227,6 +226,10 @@ package body DAGBuild.GUI is
                         when others =>
                             null;
                     end case;
+
+                when SDL.Events.Keyboards.Text_Input =>
+                    --if(Event.Keyboard.Key_Sym.Modifiers )
+                    Ada.Text_IO.Put_Line(Interfaces.C.To_Ada(Event.Text_Input.Text));
                 
                 when others =>
                     null;
@@ -247,16 +250,20 @@ package body DAGBuild.GUI is
         SDL.Video.Renderers.Makers.Create(GUI_State.Renderer, Window);
 
         -- Load Font used by widgets
-        SDL.TTFs.Makers.Create (Font        => DAGBuild.GUI.Widgets.DAG_Font, 
+        SDL.TTFs.Makers.Create (Font        => DAGBuild.GUI.Widgets.DAG_Font,
                                 File_Name   => DAGBuild.Settings.Font_Name,
                                 Point_Size  => DAGBuild.Settings.Font_Size);
-
+        
+        SDL.Inputs.Keyboards.Start_Text_Input;
+        
         loop
             Render(GUI_State);
             Handle_Inputs(GUI_State);
 
             exit when GUI_State.Done;
         end loop;
+
+        DAGBuild.GUI.Widgets.DAG_Font.Finalize;
 
     end Event_Loop;
 

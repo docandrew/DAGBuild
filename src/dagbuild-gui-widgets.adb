@@ -171,7 +171,16 @@ package body DAGBuild.GUI.Widgets is
                           y + 2,
                           64,
                           48,
-                          st.Theme.Button_Background);
+                          st.Theme.Button_HoverBackground);
+
+                -- Draw Label
+                Draw_Text (r => st.Renderer,
+                           Text => Label,
+                           x => x + 4 + 2,
+                           y => y + 8 + 2,
+                           w => Dummy_w,
+                           h => Dummy_h,
+                           Color => st.Theme.Button_Foreground);
             else
                 -- Hot but not Active - 
                 Draw_Rect(st.Renderer,
@@ -179,26 +188,33 @@ package body DAGBuild.GUI.Widgets is
                           y,
                           64,
                           48,
-                          st.Theme.Button_hoverbackground);
+                          st.Theme.Button_HoverBackground);
+
+                Draw_Text (r => st.Renderer,
+                           Text => Label,
+                           x => x + 4,
+                           y => y + 8,
+                           w => Dummy_w,
+                           h => Dummy_h,
+                           Color => st.Theme.Button_Foreground);
             end if;
         else
             -- Not hot, could be active
-            Draw_Rect(st.Renderer,
-                      x,
-                      y,
-                      64,
-                      48,
-                      st.Theme.Button_Background);
-        end if;
+            Draw_Rect (st.Renderer,
+                       x,
+                       y,
+                       64,
+                       48,
+                       st.Theme.Button_Background);
 
-        -- Draw Label
-        Draw_Text (r => st.Renderer,
-                   Text => Label,
-                   x => x+4,
-                   y => y+8,
-                   w => Dummy_w,
-                   h => Dummy_h,
-                   Color => st.Theme.Button_Foreground);
+            Draw_Text (r => st.Renderer,
+                       Text => Label,
+                       x => x + 4,
+                       y => y + 8,
+                       w => Dummy_w,
+                       h => Dummy_h,
+                       Color => st.Theme.Button_Foreground);
+        end if;
 
         -- Keyboard input processing
         HandleKeys: declare

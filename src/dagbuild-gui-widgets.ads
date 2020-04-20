@@ -30,4 +30,12 @@ package DAGBuild.GUI.Widgets is
                     x       : SDL.Natural_Coordinate;
                     y       : SDL.Natural_Coordinate);
 
+    -- Single-Line Text Field
+    function Text_Field (st              : in out DAGBuild.GUI.State.UIState;
+                         Text            : in out Ada.Strings.Unbounded.Unbounded_String;
+                         x               : SDL.Natural_Coordinate;
+                         y               : SDL.Natural_Coordinate;
+                         Display_Length  : SDL.Positive_Dimension;
+                         Max_Length      : Natural) return Boolean;
+
 end DAGBuild.GUI.Widgets;
