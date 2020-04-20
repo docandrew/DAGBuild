@@ -99,11 +99,12 @@ package body DAGBuild.GUI is
     -- Render screen elements
     procedure Render(st : in out DAGBuild.GUI.State.UIState)
     is
-        Click : Boolean := False;
-
         package Widgets renames DAGBuild.GUI.Widgets;
+
+        Click : Boolean := False;
+        Clear_Color : SDL.Video.Palettes.Colour := st.Theme.Editor_background;
     begin
-        Clear_Window(st.Renderer, DAGBuild.Settings.Dark_BG);
+        Clear_Window(st.Renderer, Clear_Color);
 
         IMGUI_Start(st);
 
@@ -116,7 +117,7 @@ package body DAGBuild.GUI is
                                  "One");
 
         if Click then
-            DAGBuild.Settings.Dark_BG := (255, 0, 0, 255);
+            Clear_Color := (255, 0, 0, 255);
             Show_Button := True;
         end if;
 
@@ -128,7 +129,7 @@ package body DAGBuild.GUI is
                                                      "???");
 
                 if Click then
-                    DAGBuild.Settings.Dark_BG := (255, 255, 0, 255);
+                    Clear_Color := (255, 255, 0, 255);
                     Show_Button := False;
                 end if;
 
@@ -142,7 +143,7 @@ package body DAGBuild.GUI is
                                  "Two");
 
         if Click then
-            DAGBuild.Settings.Dark_BG := (255, 0, 255, 255);
+            Clear_Color := (255, 0, 255, 255);
         end if;
 
         Click := Widgets.Button (st,
@@ -151,7 +152,7 @@ package body DAGBuild.GUI is
                                  "Three");
 
         if Click then
-            DAGBuild.Settings.Dark_BG := (0, 255, 255, 255);
+            Clear_Color := (0, 255, 255, 255);
         end if;
 
         Click := Widgets.Button (st,
@@ -164,15 +165,15 @@ package body DAGBuild.GUI is
 
         --Slider test
         if Widgets.Slider(st, 500, 40, 255, Integer(Red)) then
-            DAGBuild.Settings.Dark_BG := (Red, Green, Blue, 255);
+            Clear_Color := (Red, Green, Blue, 255);
         end if;
 
         if Widgets.Slider(st, 550, 40, 255, Integer(Green)) then
-            DAGBuild.Settings.Dark_BG := (Red, Green, Blue, 255);
+            Clear_Color := (Red, Green, Blue, 255);
         end if;
 
         if Widgets.Slider(st, 600, 40, 255, Integer(Blue)) then
-            DAGBuild.Settings.Dark_BG := (Red, Green, Blue, 255);
+            Clear_Color := (Red, Green, Blue, 255);
         end if;
 
         Widgets.Label(st, "Hello DAGBuild!", 50, 300);

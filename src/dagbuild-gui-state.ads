@@ -6,6 +6,8 @@ with SDL.Events.Keyboards;
 
 with SDL.Video.Renderers;
 
+with DAGBuild.Settings;
+
 package DAGBuild.GUI.State is
 
     Invalid_Scope_Exception : Exception;
@@ -77,6 +79,8 @@ package DAGBuild.GUI.State is
 
         Last_Widget     : ID;
         Last_Scope      : Scope;
+
+        Theme           : DAGBuild.Settings.Color_Scheme := DAGBuild.Settings.Default_Dark;
 
         Done            : Boolean := False;
     end record;

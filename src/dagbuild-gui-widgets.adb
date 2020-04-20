@@ -150,7 +150,7 @@ package body DAGBuild.GUI.Widgets is
                         y-2,
                         70,
                         54,
-                        DAGBuild.Settings.Dark_Focus);
+                        st.Theme.InputOption_activeBorder);
 
             st.Kbd_Heartbeat := True;
         end if;
@@ -161,17 +161,17 @@ package body DAGBuild.GUI.Widgets is
                     y+2,
                     64,
                     48,
-                    (0,0,0,0));
+                    st.Theme.Widget_Shadow);
         
         if st.Hot_Item = id and st.Hot_Scope = Scope then
             if st.Active_Item = id and st.Active_Scope = Scope then
                 -- Hot and Active button - depress
                 Draw_Rect(st.Renderer,
-                          x+2,
-                          y+2,
+                          x + 2,
+                          y + 2,
                           64,
                           48,
-                          DAGBuild.Settings.Dark_Active);
+                          st.Theme.Button_Background);
             else
                 -- Hot but not Active - 
                 Draw_Rect(st.Renderer,
@@ -179,7 +179,7 @@ package body DAGBuild.GUI.Widgets is
                           y,
                           64,
                           48,
-                          DAGBuild.Settings.Dark_Hot);
+                          st.Theme.Button_hoverbackground);
             end if;
         else
             -- Not hot, could be active
@@ -188,7 +188,7 @@ package body DAGBuild.GUI.Widgets is
                       y,
                       64,
                       48,
-                      DAGBuild.Settings.Dark_Widget);
+                      st.Theme.Button_Background);
         end if;
 
         -- Draw Label
@@ -198,7 +198,7 @@ package body DAGBuild.GUI.Widgets is
                    y => y+8,
                    w => Dummy_w,
                    h => Dummy_h,
-                   Color => DAGBuild.Settings.Dark_Text);
+                   Color => st.Theme.Button_Foreground);
 
         -- Keyboard input processing
         HandleKeys: declare
@@ -281,13 +281,18 @@ package body DAGBuild.GUI.Widgets is
                         y-2,
                         36,
                         256+16+4,
-                        (16#5C#,16#CF#,16#E6#,255));
+                        st.Theme.InputOption_activeBorder);
 
             st.Kbd_Heartbeat := True;
         end if;
 
         -- Draw the scrollbar
-        Draw_Rect(st.Renderer, x, y, 32, 256+16, DAGBuild.Settings.Dark_Widget);
+        Draw_Rect (st.Renderer,
+                   x,
+                   y,
+                   32,
+                   256 + 16,
+                   st.Theme.Scrollbar_shadow);
 
         -- Highlight the slider
         if (st.Hot_Item = id and st.Hot_Scope = Scope) or 
@@ -297,14 +302,14 @@ package body DAGBuild.GUI.Widgets is
                         y + 8 + ypos,
                         16,
                         16,
-                        DAGBuild.Settings.Dark_Active);
+                        st.Theme.ScrollbarSlider_activeBackground);
         else
             Draw_Rect ( st.Renderer,
                         x + 8, 
                         y + 8 + ypos,
                         16,
                         16,
-                        DAGBuild.Settings.Dark_Hot);
+                        st.Theme.ScrollbarSlider_background);
         end if;
 
         -- Update slider position
@@ -397,7 +402,7 @@ package body DAGBuild.GUI.Widgets is
                    y,
                    140,
                    32,
-                   DAGBuild.Settings.Dark_Widget);
+                   st.Theme.Input_background);
 
         Draw_Text (r => st.Renderer,
                    Text => Text, 
@@ -405,7 +410,7 @@ package body DAGBuild.GUI.Widgets is
                    y => y+8,
                    w => w,
                    h => h,
-                   Color => DAGBuild.Settings.Dark_Text);
+                   Color => st.Theme.Input_foreground);
     end Label;
 
     -- Draw a label with the given text a specific location
@@ -427,7 +432,14 @@ package body DAGBuild.GUI.Widgets is
                    y,
                    140,
                    32,
-                   DAGBuild.Settings.Dark_Widget);
+                   st.Theme.Input_background);
+
+        Outline_Rect (st.Renderer,
+                      x,
+                      y,
+                      140,
+                      32,
+                      st.Theme.Input_border);
 
         -- Clip the number of characters by what we can actually display
         Draw_Text (r => st.Renderer,
@@ -436,7 +448,7 @@ package body DAGBuild.GUI.Widgets is
                    y => y+8,
                    w => w,
                    h => h,
-                   Color => DAGBuild.Settings.Dark_Text);
+                   Color => st.Theme.Input_foreground);
 
         return True;
     end Text_Field;
