@@ -25,17 +25,22 @@ package DAGBuild.GUI.Widgets is
                     Val : in out Integer) return Boolean;
 
     -- Draw a label
-    procedure Label(st      : in out DAGBuild.GUI.State.UIState;
-                    Text    : String;
-                    x       : SDL.Natural_Coordinate;
-                    y       : SDL.Natural_Coordinate);
+    -- @field Display_Length is the width (in characters) that this field should hold
+    procedure Label(st              : in out DAGBuild.GUI.State.UIState;
+                    Text            : String;
+                    x               : SDL.Natural_Coordinate;
+                    y               : SDL.Natural_Coordinate;
+                    Display_Length  : Natural := 10);
 
     -- Single-Line Text Field
+    -- @field Display_Length is the number of characters that this widget can display
+    -- @field Max_Length is the max number of characters that this widget can hold
+    -- @return True if we hit Return key in this field.
     function Text_Field (st              : in out DAGBuild.GUI.State.UIState;
                          Text            : in out Ada.Strings.Unbounded.Unbounded_String;
                          x               : SDL.Natural_Coordinate;
                          y               : SDL.Natural_Coordinate;
-                         Display_Length  : SDL.Positive_Dimension;
-                         Max_Length      : Natural) return Boolean;
+                         Display_Length  : Natural := 10;
+                         Max_Length      : Natural := 10) return Boolean;
 
 end DAGBuild.GUI.Widgets;

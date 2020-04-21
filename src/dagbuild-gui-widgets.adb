@@ -7,6 +7,8 @@ with SDL;
 with SDL.Events;
 with SDL.Events.Keyboards;
 
+with SDL.Inputs.Keyboards;
+
 with SDL.Video.Palettes;
 with SDL.Video.Rectangles;
 with SDL.Video.Renderers;
@@ -405,25 +407,34 @@ package body DAGBuild.GUI.Widgets is
     end Slider;
 
     -- Draw a label with the given text a specific location
-    procedure Label(st      : in out DAGBuild.GUI.State.UIState;
-                    Text    : String;
-                    x       : SDL.Natural_Coordinate;
-                    y       : SDL.Natural_Coordinate)
+    procedure Label(st              : in out DAGBuild.GUI.State.UIState;
+                    Text            : String;
+                    x               : SDL.Natural_Coordinate;
+                    y               : SDL.Natural_Coordinate;
+                    Display_Length  : Natural := 10)
     is
+        -- Labels have an id and scope, but ignore them
+        id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
+        scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
+
+        Field_Width     : constant SDL.Positive_Dimension := SDL.Positive_Dimension(DAGBuild.Settings.Font_Size) * 
+                                                                 SDL.Positive_Dimension(Display_Length);
+        Field_Height    : constant SDL.Positive_Dimension := 2 * SDL.Positive_Dimension(DAGBuild.Settings.Font_Size);
+
         w : SDL.Dimension;
         h : SDL.Dimension;
     begin
         Draw_Rect (st.Renderer,
                    x,
                    y,
-                   140,
-                   32,
+                   Field_Width,
+                   Field_Height,
                    st.Theme.Input_background);
 
         Draw_Text (r => st.Renderer,
                    Text => Text, 
-                   x => x+4,
-                   y => y+8,
+                   x => x + 4,
+                   y => y + 8,
                    w => w,
                    h => h,
                    Color => st.Theme.Input_foreground);
@@ -435,38 +446,151 @@ package body DAGBuild.GUI.Widgets is
                          Text            : in out Ada.Strings.Unbounded.Unbounded_String;
                          x               : SDL.Natural_Coordinate;
                          y               : SDL.Natural_Coordinate;
-                         Display_Length  : SDL.Positive_Dimension;
-                         Max_Length      : Natural) return Boolean
+                         Display_Length  : Natural := 10;
+                         Max_Length      : Natural := 10) return Boolean
     is
         package UBS renames Ada.Strings.Unbounded;
+        use DAGBuild.GUI.State;
+
+        id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
+        scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
+        
+        -- Size (in pixels) of the field. @TODO: Need to scale this by ppi
+        Field_Width     : constant SDL.Positive_Dimension := SDL.Positive_Dimension(DAGBuild.Settings.Font_Size) * 
+                                                                 SDL.Positive_Dimension(Display_Length);
+        Field_Height    : constant SDL.Positive_Dimension := 2 * SDL.Positive_Dimension(DAGBuild.Settings.Font_Size);
 
         w : SDL.Dimension;
         h : SDL.Dimension;
+
+        -- Need to store cursor position
     begin
+        SDL.Inputs.Keyboards.Set_Text_Input_Rectangle((x, y, Field_Width, Field_Height));
+
+        -- Check for mouse click
+        if Region_Hit(st, x, y, Field_Width, Field_Height) then
+            st.Hot_Item := id;
+            st.Hot_Scope := scope;
+
+            -- Clicking on a text field also gives us keyboard focus
+            if st.Active_Item = NO_ITEM and st.Mouse_Down then
+                st.Active_Item := id;
+                st.Active_Scope := scope;
+            
+                st.Kbd_Item := id;
+                st.Kbd_Scope := Scope;
+            end if;
+
+        end if;
+
+        -- if no widget has keyboard focus, take it
+        if st.Kbd_Item = NO_ITEM then
+            st.Kbd_Item := id;
+            st.Kbd_Scope := Scope;
+        end if;
+
         Draw_Rect (st.Renderer,
                    x,
                    y,
-                   140,
-                   32,
+                   Field_Width,
+                   Field_Height,
                    st.Theme.Input_background);
 
         Outline_Rect (st.Renderer,
                       x,
                       y,
-                      140,
-                      32,
+                      Field_Width,
+                      Field_Height,
                       st.Theme.Input_border);
+
+        -- if we have keyboard focus, show it and update heartbeat
+        if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+            Outline_Rect(st.Renderer,
+                        x,
+                        y,
+                        Field_Width,
+                        Field_Height,
+                        st.Theme.InputOption_activeBorder);
+
+            st.Kbd_Heartbeat := True;
+        end if;
 
         -- Clip the number of characters by what we can actually display
         Draw_Text (r => st.Renderer,
                    Text => UBS.To_String(UBS.Unbounded_Slice(Text, 1, UBS.Length(Text))),
-                   x => x+4,
-                   y => y+8,
+                   x => x + 4,
+                   y => y + 8,
                    w => w,
                    h => h,
                    Color => st.Theme.Input_foreground);
 
-        return True;
+        HandleKeys: Declare
+            use SDL.Events.Keyboards;
+        begin    
+            if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+                --Ada.Text_IO.Put_Line("slider key: " & st.Kbd_Pressed'Image);
+
+                case st.Kbd_Pressed is
+                    when SDL.Events.Keyboards.Code_Tab =>
+                        -- Lose focus, next widget will snag it.
+                        st.Kbd_Item := NO_ITEM;
+                        st.Kbd_Scope := NO_SCOPE;
+
+                        -- or make previous widget get focus if we're doing shift+tab.
+                        if (st.Kbd_Modifier and Modifier_Shift) /= 0 then
+                            st.Kbd_Item := st.Last_Widget;
+                            st.Kbd_Scope := st.Last_Scope;
+                        end if;
+
+                        st.Kbd_Pressed := NO_KEY;
+
+                    when SDL.Events.Keyboards.Code_Return |
+                         SDL.Events.Keyboards.Code_KP_Enter =>
+                        -- Give up keyboard focus for faster entry of many text
+                        -- fields.
+                        st.Kbd_Item := NO_ITEM;
+                        st.Kbd_Scope := NO_SCOPE;
+
+                        -- clear key
+                        st.Kbd_Pressed := NO_KEY;
+                        
+                        return True;
+
+                    when SDL.Events.Keyboards.Code_Left =>
+                        --move cursor left
+                        null;
+                    
+                    when SDL.Events.Keyboards.Code_Right =>
+                        --move cursor right
+                        null;
+
+                    -- when SDL.Events.Keyboards.Code_Up =>
+                    --     if Val > 0 then
+                    --         Val := Val - 1;
+                    --     end if;
+
+                    --     st.Kbd_Pressed := NO_KEY;
+                    --     return True;
+
+                    -- when SDL.Events.Keyboards.Code_Down =>
+                    --     if Val < Max then
+                    --         Val := Val + 1;
+                    --     end if;
+
+                    --     st.Kbd_Pressed := NO_KEY;
+                    --     return True;
+
+                    when others =>
+                        --Ada.Text_IO.Put_Line("other: " & st.Kbd_Pressed'Image);
+                        null;
+                end case;
+            end if;
+        end HandleKeys;
+
+        st.Last_Widget := id;
+        st.Last_Scope := Scope;
+
+        return False;
     end Text_Field;
 
 end DAGBuild.GUI.Widgets;

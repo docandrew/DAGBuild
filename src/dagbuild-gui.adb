@@ -1,6 +1,6 @@
 
 with Interfaces.C;
-with Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 with SDL.Events.Events;
@@ -175,7 +175,9 @@ package body DAGBuild.GUI is
 
         Widgets.Label(st, "Hello DAGBuild!", 50, 300);
 
-        Click := Widgets.Text_Field(st, My_Str, 50, 350, 20, 20);
+        Click := Widgets.Text_Field(st, My_Str, 50, 350);
+
+        Click := Widgets.Text_Field(st, My_Str, 50, 400);
         
         IMGUI_Finish(st);
 
@@ -214,9 +216,9 @@ package body DAGBuild.GUI is
                 when SDL.Events.Keyboards.Key_Down =>
                     st.Kbd_Pressed := Event.Keyboard.Key_Sym.Key_Code;
                     st.Kbd_Modifier := Event.Keyboard.Key_Sym.Modifiers;
-                    st.Kbd_Char := ASCII.NUL;
-                    --Ada.Text_IO.Put_Line("key: " & st.Kbd_Pressed'Image);
-                    -- Ada.Text_IO.Put_Line("Shift: " & SDL.Events.Keyboards.Modifier_Shift'Image);
+                    --st.Kbd_Char := ASCII.NUL;
+                    Ada.Text_IO.Put_Line("key: " & st.Kbd_Pressed'Image);
+                    Ada.Text_IO.Put_Line("Shift: " & SDL.Events.Keyboards.Modifier_Shift'Image);
             
                 when SDL.Events.Keyboards.Key_Up =>
                     
@@ -229,8 +231,8 @@ package body DAGBuild.GUI is
 
                 when SDL.Events.Keyboards.Text_Input =>
                     --if(Event.Keyboard.Key_Sym.Modifiers )
-                    Ada.Text_IO.Put_Line(Interfaces.C.To_Ada(Event.Text_Input.Text));
-                
+                    Ada.Text_IO.Put_Line("text: " & Interfaces.C.To_Ada(Event.Text_Input.Text));
+                    st.Kbd_Text := To_Unbounded_String(Interfaces.C.To_Ada(Event.Text_Input.Text));
                 when others =>
                     null;
             end case;
