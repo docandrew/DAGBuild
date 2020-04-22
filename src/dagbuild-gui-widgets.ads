@@ -25,7 +25,7 @@ package DAGBuild.GUI.Widgets is
                     Val : in out Integer) return Boolean;
 
     -- Draw a label
-    -- @field Display_Length is the width (in characters) that this field should hold
+    -- @field Display_Length is the width in characters that this field should hold
     procedure Label(st              : in out DAGBuild.GUI.State.UIState;
                     Text            : String;
                     x               : SDL.Natural_Coordinate;

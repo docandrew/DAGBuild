@@ -441,7 +441,8 @@ package body DAGBuild.GUI.Widgets is
     end Label;
 
     -- Draw a label with the given text a specific location
-    -- @TODO: make Display_Length, Max_Length work with a number of chars
+    -- @TODO: Probably make this take a custom string type that can store cursor
+    -- metadata too.
     function Text_Field (st              : in out DAGBuild.GUI.State.UIState;
                          Text            : in out Ada.Strings.Unbounded.Unbounded_String;
                          x               : SDL.Natural_Coordinate;
@@ -553,37 +554,45 @@ package body DAGBuild.GUI.Widgets is
 
                         -- clear key
                         st.Kbd_Pressed := NO_KEY;
-                        
+
                         return True;
 
                     when SDL.Events.Keyboards.Code_Left =>
-                        --move cursor left
+                        --@TODO move cursor left
                         null;
                     
                     when SDL.Events.Keyboards.Code_Right =>
-                        --move cursor right
+                        --@TODO move cursor right
                         null;
 
-                    -- when SDL.Events.Keyboards.Code_Up =>
-                    --     if Val > 0 then
-                    --         Val := Val - 1;
-                    --     end if;
-
-                    --     st.Kbd_Pressed := NO_KEY;
-                    --     return True;
-
-                    -- when SDL.Events.Keyboards.Code_Down =>
-                    --     if Val < Max then
-                    --         Val := Val + 1;
-                    --     end if;
-
-                    --     st.Kbd_Pressed := NO_KEY;
-                    --     return True;
+                    when SDL.Events.Keyboards.Code_Backspace =>
+                        --@TODO delete prev char
+                        null;
 
                     when others =>
                         --Ada.Text_IO.Put_Line("other: " & st.Kbd_Pressed'Image);
                         null;
                 end case;
+
+                -- Handle text event if there was one
+                if UBS.Length(st.Kbd_Text) /= 0 then
+                    editText : declare
+                        canFit : Natural;
+                    begin
+                        -- make sure we aren't already at max length
+                        if Max_Length = 0 then
+                            canFit := Natural'Last;
+                        else
+                            canFit := (if UBS.Length(Text) >= Max_Length then 
+                                        0 else
+                                        Max_Length - UBS.Length(Text));
+                        end if;
+
+                        --@TODO only append/insert the number of characters we can actually fit.
+                        UBS.Append(Text, st.Kbd_Text);
+                        st.Kbd_Text := UBS.Null_Unbounded_String;
+                    end editText;
+                end if;
             end if;
         end HandleKeys;
 

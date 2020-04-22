@@ -74,7 +74,7 @@ package DAGBuild.GUI.State is
 
         Kbd_Heartbeat   : Boolean := False;
 
-        Kbd_Char        : Character;
+        --Kbd_Char        : Character;
         Kbd_Text        : Unbounded_String;
 
         Last_Widget     : ID;

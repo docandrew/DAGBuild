@@ -64,10 +64,11 @@ package body DAGBuild.GUI is
             st.Kbd_Scope := NO_SCOPE;
         end if;
 
-        -- Reset heartbeat and pressed key
+        -- Reset heartbeat, pressed key and any text inputs that took place
         st.Kbd_Heartbeat := False;
         st.Kbd_Pressed := NO_KEY;
-        st.Kbd_Char := ASCII.NUL;
+        --st.Kbd_Char := ASCII.NUL;
+        st.Kbd_Text := Ada.Strings.Unbounded.Null_Unbounded_String;
 
         DAGBuild.GUI.State.Exit_Scope(st);
 
@@ -93,6 +94,7 @@ package body DAGBuild.GUI is
     Blue        : SDL.Video.Palettes.Colour_Component := 0;
     Clear_Color : SDL.Video.Palettes.Colour := DAGBuild.Settings.Default_Dark.Editor_background;
     My_Str      : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String("Input here");
+    My_Str2     : Ada.Strings.Unbounded.Unbounded_String;
 
     -- Render screen elements
     procedure Render(st : in out DAGBuild.GUI.State.UIState)
@@ -177,7 +179,7 @@ package body DAGBuild.GUI is
 
         Click := Widgets.Text_Field(st, My_Str, 50, 350);
 
-        Click := Widgets.Text_Field(st, My_Str, 50, 400);
+        Click := Widgets.Text_Field(st, My_Str2, 50, 400);
         
         IMGUI_Finish(st);
 
@@ -217,8 +219,8 @@ package body DAGBuild.GUI is
                     st.Kbd_Pressed := Event.Keyboard.Key_Sym.Key_Code;
                     st.Kbd_Modifier := Event.Keyboard.Key_Sym.Modifiers;
                     --st.Kbd_Char := ASCII.NUL;
-                    Ada.Text_IO.Put_Line("key: " & st.Kbd_Pressed'Image);
-                    Ada.Text_IO.Put_Line("Shift: " & SDL.Events.Keyboards.Modifier_Shift'Image);
+                    -- Ada.Text_IO.Put_Line("key: " & st.Kbd_Pressed'Image);
+                    -- Ada.Text_IO.Put_Line("Shift: " & SDL.Events.Keyboards.Modifier_Shift'Image);
             
                 when SDL.Events.Keyboards.Key_Up =>
                     
