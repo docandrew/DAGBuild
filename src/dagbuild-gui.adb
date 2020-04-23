@@ -8,6 +8,7 @@ with SDL.Events.Keyboards;
 with SDL.Events.Mice;
 with SDL.Hints;
 with SDL.Inputs.Keyboards;
+with SDL.Inputs.Mice;
 with SDL.TTFs.Makers;
 with SDL.Video.Palettes;
 with SDL.Video.Renderers;
@@ -69,6 +70,16 @@ package body DAGBuild.GUI is
         st.Kbd_Pressed := NO_KEY;
         --st.Kbd_Char := ASCII.NUL;
         st.Kbd_Text := Ada.Strings.Unbounded.Null_Unbounded_String;
+
+        -- Reset cursor if necessary. We don't want to switch back and forth
+        -- between an arrow and "I-Beam" if the hot item is going to remain
+        -- a text field. If we leave here with no hot item (meaning that the
+        -- mouse left a text field if it was there previously), then we'll
+        -- switch back to the arrow cursor. If it remains hot, we'll leave it
+        -- to whatever it was set to by the widget that may have set it last.
+        if st.Hot_Item = NO_ITEM then
+            SDL.Inputs.Mice.Set_Cursor(DAGBuild.GUI.State.Arrow_Cursor);
+        end if;
 
         DAGBuild.GUI.State.Exit_Scope(st);
 
@@ -234,7 +245,7 @@ package body DAGBuild.GUI is
                 when SDL.Events.Keyboards.Text_Input =>
                     --if(Event.Keyboard.Key_Sym.Modifiers )
                     --Ada.Text_IO.Put_Line("text: " & Interfaces.C.To_Ada(Event.Text_Input.Text));
-                    st.Kbd_Text := To_Unbounded_String(Interfaces.C.To_Ada(Event.Text_Input.Text));
+                    st.Kbd_Text := To_Unbounded_String (Interfaces.C.To_Ada (Event.Text_Input.Text));
                 when others =>
                     null;
             end case;
@@ -244,17 +255,23 @@ package body DAGBuild.GUI is
     end Handle_Inputs;
 
     -- Main rendering and input handling loop
-    procedure Event_Loop(Window : in out SDL.Video.Windows.Window)
+    procedure Event_Loop (Window : in out SDL.Video.Windows.Window)
     is
         GUI_State       : DAGBuild.GUI.State.UIState;
+        
+        --use SDL.Inputs.Mice;
     begin
-        SDL.Hints.Set(SDL.Hints.Render_Scale_Quality, "1");
+        SDL.Hints.Set (SDL.Hints.Render_Scale_Quality, "1");
 
         -- Create hardware renderer if available
-        SDL.Video.Renderers.Makers.Create(GUI_State.Renderer, Window);
+        SDL.Video.Renderers.Makers.Create (GUI_State.Renderer, Window);
 
         -- Create a cursor for the text fields
-        --SDL.Inputs.Mice.Create_System_Cursor()
+        SDL.Inputs.Mice.Create_System_Cursor (Self          => DAGBuild.GUI.State.Arrow_Cursor,
+                                              Cursor_Name   => SDL.Inputs.Mice.ARROW);
+
+        SDL.Inputs.Mice.Create_System_Cursor (Self          => DAGBuild.GUI.State.Text_Cursor,
+                                              Cursor_Name   => SDL.Inputs.Mice.IBEAM);
 
         -- Load Font used by widgets
         SDL.TTFs.Makers.Create (Font        => DAGBuild.GUI.Widgets.DAG_Font,
@@ -264,8 +281,8 @@ package body DAGBuild.GUI is
         SDL.Inputs.Keyboards.Start_Text_Input;
         
         loop
-            Render(GUI_State);
-            Handle_Inputs(GUI_State);
+            Render (GUI_State);
+            Handle_Inputs (GUI_State);
 
             exit when GUI_State.Done;
         end loop;

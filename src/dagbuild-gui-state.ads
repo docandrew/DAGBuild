@@ -3,7 +3,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with SDL.Events;
 with SDL.Events.Keyboards;
-
+with SDL.Inputs.Mice;
 with SDL.Video.Renderers;
 
 with DAGBuild.Settings;
@@ -23,6 +23,9 @@ package DAGBuild.GUI.State is
 
     NO_SCOPE        : constant Scope := 0;
     INVALID_SCOPE   : constant Scope := -1;
+
+    Arrow_Cursor    : SDL.Inputs.Mice.Cursor;
+    Text_Cursor     : SDL.Inputs.Mice.Cursor;
 
     -- Keep track of last assigned IDs in each scope so we can resume once
     -- out of scope.

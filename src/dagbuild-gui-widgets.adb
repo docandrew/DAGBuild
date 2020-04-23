@@ -6,9 +6,8 @@ with SDL;
 
 with SDL.Events;
 with SDL.Events.Keyboards;
-
 with SDL.Inputs.Keyboards;
-
+with SDL.Inputs.Mice;
 with SDL.Video.Palettes;
 with SDL.Video.Rectangles;
 with SDL.Video.Renderers;
@@ -475,7 +474,7 @@ package body DAGBuild.GUI.Widgets is
             st.Hot_Scope := scope;
 
             -- Update our cursor to the little text dealie
-
+            SDL.Inputs.Mice.Set_Cursor(DAGBuild.GUI.State.Text_Cursor);
 
             -- Clicking on a text field gives us keyboard focus, also 
             --  updates the cursor location.
