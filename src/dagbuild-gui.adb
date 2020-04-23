@@ -253,6 +253,9 @@ package body DAGBuild.GUI is
         -- Create hardware renderer if available
         SDL.Video.Renderers.Makers.Create(GUI_State.Renderer, Window);
 
+        -- Create a cursor for the text fields
+        --SDL.Inputs.Mice.Create_System_Cursor()
+
         -- Load Font used by widgets
         SDL.TTFs.Makers.Create (Font        => DAGBuild.GUI.Widgets.DAG_Font,
                                 File_Name   => DAGBuild.Settings.Font_Name,

@@ -183,6 +183,7 @@ package body DAGBuild.GUI.Widgets is
                            w => Dummy_w,
                            h => Dummy_h,
                            Color => st.Theme.Button_Foreground);
+                --@TODO play audio of label for accessibility
             else
                 -- Hot but not Active - 
                 Draw_Rect(st.Renderer,
@@ -199,6 +200,7 @@ package body DAGBuild.GUI.Widgets is
                            w => Dummy_w,
                            h => Dummy_h,
                            Color => st.Theme.Button_Foreground);
+                --@TODO play audio of label for accessibility
             end if;
         else
             -- Not hot, could be active
@@ -464,30 +466,43 @@ package body DAGBuild.GUI.Widgets is
         w : SDL.Dimension;
         h : SDL.Dimension;
 
-        -- Need to store cursor position
     begin
         SDL.Inputs.Keyboards.Set_Text_Input_Rectangle((x, y, Field_Width, Field_Height));
 
-        -- Check for mouse click
+        -- Check for mouseover/click
         if Region_Hit(st, x, y, Field_Width, Field_Height) then
             st.Hot_Item := id;
             st.Hot_Scope := scope;
 
-            -- Clicking on a text field also gives us keyboard focus
+            -- Update our cursor to the little text dealie
+
+
+            -- Clicking on a text field gives us keyboard focus, also 
+            --  updates the cursor location.
             if st.Active_Item = NO_ITEM and st.Mouse_Down then
                 st.Active_Item := id;
                 st.Active_Scope := scope;
             
                 st.Kbd_Item := id;
                 st.Kbd_Scope := Scope;
+
+                -- Since we got here via a click, we can set the cursor to the
+                --  click location.
             end if;
 
         end if;
 
-        -- if no widget has keyboard focus, take it
+        -- if no widget has keyboard focus, take it. 
         if st.Kbd_Item = NO_ITEM then
             st.Kbd_Item := id;
             st.Kbd_Scope := Scope;
+            
+            --We now own the cursor and selection within the UIState, so can
+            -- clear it out. Any changes made while we have the focus will be
+            -- persisted.
+            st.Cursor_Pos := 0;
+            st.Selection_Start := 0;
+            st.Selection_End := 0;
         end if;
 
         Draw_Rect (st.Renderer,
@@ -516,16 +531,49 @@ package body DAGBuild.GUI.Widgets is
             st.Kbd_Heartbeat := True;
         end if;
 
-        -- Clip the number of characters by what we can actually display
-        Draw_Text (r => st.Renderer,
-                   Text => UBS.To_String(UBS.Unbounded_Slice(Text, 1, UBS.Length(Text))),
-                   x => x + 4,
-                   y => y + 8,
-                   w => w,
-                   h => h,
-                   Color => st.Theme.Input_foreground);
+        -- If we are active, then drag the cursor
+        -- if st.Active_Item = id and st.Active_Scope = Scope then
+        --     Update: declare
+        --         Mouse_Pos : Integer := Integer(st.Mouse_x) - 
+        --                                 Integer(y + 8);
+        --         New_Val : Integer;
+        --     begin
 
-        HandleKeys: Declare
+        --         if Mouse_Pos < 0 then
+        --             Mouse_Pos := 0;
+        --         end if;
+
+        --         if Mouse_Pos > 255 then
+        --             Mouse_Pos := 255;
+        --         end if;
+
+        --         New_Val := (Mouse_Pos * Max) / 255;
+
+        --         if Val /= New_Val then
+        --             Val := New_Val;
+        --             return True;
+        --         end if;
+        --     end Update;
+        -- end if;
+
+        -- Draw the characters
+        --@TODO Draw the cursor in the right spot
+        --@TODO Draw the selection highlight
+        --@TODO Clip the number of characters by what we can actually display
+        drawChars : declare
+            First_Draw_Index    : Natural;
+            End_Draw_Index      : Natural;
+        begin
+            Draw_Text (r => st.Renderer,
+                    Text => UBS.To_String(UBS.Unbounded_Slice(Text, 1, UBS.Length(Text))),
+                    x => x + 4,
+                    y => y + 8,
+                    w => w,
+                    h => h,
+                    Color => st.Theme.Input_foreground);
+        end drawChars;
+
+        HandleKeys : declare
             use SDL.Events.Keyboards;
         begin    
             if st.Kbd_Item = id and st.Kbd_Scope = Scope then
@@ -558,15 +606,15 @@ package body DAGBuild.GUI.Widgets is
                         return True;
 
                     when SDL.Events.Keyboards.Code_Left =>
-                        --@TODO move cursor left
+                        --@TODO move cursor left if we have keyboard focus
                         null;
                     
                     when SDL.Events.Keyboards.Code_Right =>
-                        --@TODO move cursor right
+                        --@TODO move cursor right if we have keyboard focus
                         null;
 
                     when SDL.Events.Keyboards.Code_Backspace =>
-                        --@TODO delete prev char
+                        --@TODO backspace if we have keyboard focus
                         null;
 
                     when others =>
@@ -583,9 +631,8 @@ package body DAGBuild.GUI.Widgets is
                         if Max_Length = 0 then
                             canFit := Natural'Last;
                         else
-                            canFit := (if UBS.Length(Text) >= Max_Length then 
-                                        0 else
-                                        Max_Length - UBS.Length(Text));
+                            canFit := (if UBS.Length(Text) >= Max_Length then 0 
+                                        else Max_Length - UBS.Length(Text));
                         end if;
 
                         if UBS.Length(st.Kbd_Text) > canFit then
@@ -593,7 +640,7 @@ package body DAGBuild.GUI.Widgets is
                         else
                             UBS.Append(Text, st.Kbd_Text);
                         end if;
-                        
+
                         st.Kbd_Text := UBS.Null_Unbounded_String;
                     end editText;
                 end if;
