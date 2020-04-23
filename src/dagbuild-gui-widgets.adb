@@ -588,8 +588,12 @@ package body DAGBuild.GUI.Widgets is
                                         Max_Length - UBS.Length(Text));
                         end if;
 
-                        --@TODO only append/insert the number of characters we can actually fit.
-                        UBS.Append(Text, st.Kbd_Text);
+                        if UBS.Length(st.Kbd_Text) > canFit then
+                            UBS.Append(Text, UBS.Head(st.Kbd_Text, canFit));
+                        else
+                            UBS.Append(Text, st.Kbd_Text);
+                        end if;
+                        
                         st.Kbd_Text := UBS.Null_Unbounded_String;
                     end editText;
                 end if;

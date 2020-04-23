@@ -233,7 +233,7 @@ package body DAGBuild.GUI is
 
                 when SDL.Events.Keyboards.Text_Input =>
                     --if(Event.Keyboard.Key_Sym.Modifiers )
-                    Ada.Text_IO.Put_Line("text: " & Interfaces.C.To_Ada(Event.Text_Input.Text));
+                    --Ada.Text_IO.Put_Line("text: " & Interfaces.C.To_Ada(Event.Text_Input.Text));
                     st.Kbd_Text := To_Unbounded_String(Interfaces.C.To_Ada(Event.Text_Input.Text));
                 when others =>
                     null;
