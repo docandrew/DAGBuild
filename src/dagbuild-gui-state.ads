@@ -57,6 +57,7 @@ package DAGBuild.GUI.State is
     -- @field Last_Widget is the ID of the last widget handled
     -- @field Last_Scope is the scope of the last widget handled
     -- @field Done is set to True if we are exiting the program.
+    -- @field Ticks is used for blinking cursors, it measures 
     type UIState is
     record
         Renderer        : SDL.Video.Renderers.Renderer;
@@ -91,6 +92,8 @@ package DAGBuild.GUI.State is
         Theme           : DAGBuild.Settings.Color_Scheme := DAGBuild.Settings.Default_Dark;
 
         Done            : Boolean := False;
+
+        ms_Ticks        : Duration;
     end record;
 
     -- Extra keyboard help

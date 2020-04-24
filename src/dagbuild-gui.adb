@@ -38,7 +38,7 @@ package body DAGBuild.GUI is
     end IMGUI_Start;
 
     -- Finish a round
-    procedure IMGUI_Finish(st : in out DAGBuild.GUI.State.UIState)
+    procedure IMGUI_Finish (st : in out DAGBuild.GUI.State.UIState)
     is
         use ASCII;
         use DAGBuild.GUI.State;
@@ -195,7 +195,11 @@ package body DAGBuild.GUI is
         IMGUI_Finish(st);
 
         st.Renderer.Present;
-        delay 0.01; -- TODO: make a "delay until"
+
+        --@TODO this assumes rendering takes no time. We need to adjust the
+        -- delay here to get a constant frame rate.
+        delay Delay_Period;
+        st.ms_Ticks := st.ms_Ticks + Delay_Period;
     end Render;
 
     procedure Handle_Inputs(st : in out DAGBuild.GUI.State.UIState)

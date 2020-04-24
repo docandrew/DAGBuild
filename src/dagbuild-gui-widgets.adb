@@ -563,6 +563,9 @@ package body DAGBuild.GUI.Widgets is
             First_Draw_Index    : Natural;
             End_Draw_Index      : Natural;
         begin
+            -- Draw the characters up to the cursor position, use width of that
+            -- texture to identify where to draw the cursor, then draw the rest
+            -- of the characters.
             Draw_Text (r => st.Renderer,
                     Text => UBS.To_String(UBS.Unbounded_Slice(Text, 1, UBS.Length(Text))),
                     x => x + 4,
@@ -570,6 +573,22 @@ package body DAGBuild.GUI.Widgets is
                     w => w,
                     h => h,
                     Color => st.Theme.Input_foreground);
+
+            -- Use time ticks to make the cursor blink
+            -- Draw_Line (r => st.Renderer,
+            --             x1 => x + w,
+            --             y1 => y,
+            --             x2 => x + w,
+            --             y2 => y + h,
+            --             Color => st.Theme.Input_Border);
+
+            -- Draw_Text (r => st.Renderer,
+            --         Text => UBS.To_String(UBS.Unbounded_Slice(Text, st.Cursor_Pos + 1, UBS.Length(Text))),
+            --         x => x + 4,
+            --         y => y + 8,
+            --         w => w,
+            --         h => h,
+            --         Color => st.Theme.Input_foreground);
         end drawChars;
 
         HandleKeys : declare
@@ -634,10 +653,23 @@ package body DAGBuild.GUI.Widgets is
                                         else Max_Length - UBS.Length(Text));
                         end if;
 
-                        if UBS.Length(st.Kbd_Text) > canFit then
-                            UBS.Append(Text, UBS.Head(st.Kbd_Text, canFit));
+                        -- If cursor is at the end, append the text, otherwise
+                        -- insert.
+                        --@TODO - if there's a selection, delete the selection
+                        -- first.
+                        if st.Cursor_Pos = UBS.Length(Text) then
+                            if UBS.Length(st.Kbd_Text) > canFit then
+                                UBS.Append(Text, UBS.Head(st.Kbd_Text, canFit));
+                            else
+                                UBS.Append(Text, st.Kbd_Text);
+                            end if;
                         else
-                            UBS.Append(Text, st.Kbd_Text);
+                            if UBS.Length(st.Kbd_Text) > canFit then
+                                UBS.Insert(Text, st.Cursor_Pos, UBS.To_String(UBS.Head(st.Kbd_Text, canFit)));
+                            else
+                                --UBS.Append(Text, st.Kbd_Text);
+                                UBS.Insert(Text, st.Cursor_Pos, UBS.To_String(st.Kbd_Text));
+                            end if;
                         end if;
 
                         st.Kbd_Text := UBS.Null_Unbounded_String;
