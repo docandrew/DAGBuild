@@ -104,7 +104,7 @@ package body DAGBuild.GUI.Widgets is
         Text_Surface := DAG_Font.Render_UTF_8_Blended (Text    => Text,
                                                       Colour  => Color);
 
-        SDL.Video.Textures.Makers.Create (Tex       => Text_Texture, 
+        SDL.Video.Textures.Makers.Create (Tex       => Text_Texture,
                                           Renderer  => r,
                                           Surface   => Text_Surface);
 
@@ -138,7 +138,7 @@ package body DAGBuild.GUI.Widgets is
     begin
         --Ada.Text_IO.Put_Line("Creating new button with ID: " & id'Image & " scope: " & scope'Image);
 
-        if Region_Hit(st, x, y, 64, 48) then
+        if Region_Hit (st, x, y, 64, 48) then
             st.Hot_Item := id;
             st.Hot_Scope := Scope;
 
@@ -512,8 +512,12 @@ package body DAGBuild.GUI.Widgets is
             --We now own the cursor and selection within the UIState, so can
             -- clear it out. Any changes made while we have the focus will be
             -- persisted.
-            st.Cursor_Start := 1;
-            st.Cursor_End   := 1;
+            --@TODO see the most natural way of handling this. Should we select
+            -- everything by default?
+            --st.Cursor_Start := 1;
+            --st.Cursor_End   := 1;
+            st.Cursor_Start := UBS.Length(Text) + 1;
+            st.Cursor_End   := UBS.Length(Text) + 1;
         end if;
 
         Draw_Rect (st.Renderer,
@@ -579,12 +583,14 @@ package body DAGBuild.GUI.Widgets is
             if UBS.Length(Text) > 0 then
                 if st.Cursor_Start = 1 then
                     -- cursor at front, draw line then text
-                    Draw_Line (r        => st.Renderer,
-                               x1       => x + 4,
-                               y1       => y + 2,
-                               x2       => x + 4,
-                               y2       => y + Field_Height - 2,
-                               Color    => st.Theme.EditorCursor_foreground);
+                    if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+                        Draw_Line (r        => st.Renderer,
+                                   x1       => x + 4,
+                                   y1       => y + 2,
+                                   x2       => x + 4,
+                                   y2       => y + Field_Height - 2,
+                                   Color    => st.Theme.EditorCursor_foreground);
+                    end if;
                     
                     Draw_Text (r        => st.Renderer,
                                Text     => UBS.To_String(Text),
@@ -606,12 +612,14 @@ package body DAGBuild.GUI.Widgets is
                                Color    => st.Theme.Input_foreground);
 
                     --@TODO Use time ticks to make the cursor blink
-                    Draw_Line (r        => st.Renderer,
-                               x1       => x + 4 + w,
-                               y1       => y + 2,
-                               x2       => x + w + 4,
-                               y2       => y + Field_Height - 2,
-                               Color    => st.Theme.EditorCursor_foreground);
+                    if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+                        Draw_Line (r        => st.Renderer,
+                                   x1       => x + 4 + w,
+                                   y1       => y + 2,
+                                   x2       => x + w + 4,
+                                   y2       => y + Field_Height - 2,
+                                   Color    => st.Theme.EditorCursor_foreground);
+                    end if;
 
                     Draw_Text (r => st.Renderer,
                                Text => UBS.To_String(UBS.Unbounded_Slice(Text, st.Cursor_Start, UBS.Length(Text))),
@@ -630,12 +638,14 @@ package body DAGBuild.GUI.Widgets is
                                h => h,
                                Color => st.Theme.Input_foreground);
                     
-                    Draw_Line (r        => st.Renderer,
-                               x1       => x + 4 + w,
-                               y1       => y + 2,
-                               x2       => x + 4 + w,
-                               y2       => y + Field_Height - 2,
-                               Color    => st.Theme.EditorCursor_foreground);
+                    if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+                        Draw_Line (r        => st.Renderer,
+                                   x1       => x + 4 + w,
+                                   y1       => y + 2,
+                                   x2       => x + 4 + w,
+                                   y2       => y + Field_Height - 2,
+                                   Color    => st.Theme.EditorCursor_foreground);
+                    end if;
                 end if;
                 --@TODO draw selection box
             end if;
@@ -685,11 +695,19 @@ package body DAGBuild.GUI.Widgets is
                             st.Cursor_End := st.Cursor_Start;
                         end if;
 
+                    when SDL.Events.Keyboards.Code_Home =>
+                        st.Cursor_Start := 1;
+                        st.Cursor_End   := st.Cursor_Start;
+
+                    when SDL.Events.Keyboards.Code_End =>
+                        st.Cursor_Start := UBS.Length(Text) + 1;
+                        st.Cursor_End   := st.Cursor_Start;
+
                     when SDL.Events.Keyboards.Code_Backspace =>
                         if st.Cursor_Start > 1 then
                             UBS.Delete(Text, st.Cursor_Start - 1, st.Cursor_End - 1);
                             st.Cursor_Start := st.Cursor_Start - 1;
-                            st.Cursor_End := st.Cursor_End - 1;
+                            st.Cursor_End   := st.Cursor_End - 1;
                         end if;
                         --@TODO handle selection
                     
@@ -714,18 +732,25 @@ package body DAGBuild.GUI.Widgets is
                         Can_Fit     : Integer;
                         Select_Len  : Natural := st.Cursor_End - st.Cursor_Start;
                     begin
+                        Ada.Text_IO.Put_Line("Max Length:         " & Max_Length'Image);
+                        Ada.Text_IO.Put_Line("st.Kbd_Text Length: " & UBS.Length(st.Kbd_Text)'Image);
                         -- determine room to insert/append
-                        if Max_Length = 0 or Max_Length > UBS.Length (st.Kbd_Text) then
+                        if Max_Length = 0 then
                             Can_Fit := UBS.Length (st.Kbd_Text);
                         else
-                            -- if there's a selection that we're about to destroy,
+                            -- if there's a selection that we're about to replace,
                             -- then we can add the length of that selection to
                             -- the space we have.
                             Can_Fit := Max_Length + Select_Len - UBS.Length (Text);
-                            Can_Fit := (if Can_Fit < 0 then 0 else Can_Fit);
+                            
+                            if Can_Fit < 0 then
+                                Can_Fit := 0;
+                            elsif Can_Fit > UBS.Length(st.Kbd_Text) then
+                                Can_Fit := UBS.Length(st.Kbd_Text);
+                            end if;
                         end if;
 
-                        Ada.Text_IO.Put_Line("Can_Fit:      " & Can_Fit'Image);
+                        --Ada.Text_IO.Put_Line("Can_Fit C:      " & Can_Fit'Image);
                         
                         if Can_Fit > 0 then
                             if st.Cursor_Start = UBS.Length(Text) then
