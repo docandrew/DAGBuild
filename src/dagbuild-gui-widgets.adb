@@ -1,13 +1,13 @@
 with Interfaces.C; use Interfaces.C;
 
---with Ada.Text_IO;
+with Ada.Text_IO;
 
 with SDL;
 
 with SDL.Events;
 with SDL.Events.Keyboards;
 with SDL.Inputs.Keyboards;
-with SDL.Inputs.Mice;
+with SDL.Inputs.Mice.Cursors;
 with SDL.Video.Palettes;
 with SDL.Video.Rectangles;
 with SDL.Video.Renderers;
@@ -36,6 +36,19 @@ package body DAGBuild.GUI.Widgets is
 
         return True;
     end Region_Hit;
+
+    -- Draw a single line
+    procedure Draw_Line (r      : in out SDL.Video.Renderers.Renderer;
+                         x1     : SDL.Coordinate;
+                         y1     : SDL.Coordinate;
+                         x2     : SDL.Coordinate;
+                         y2     : SDL.Coordinate;
+                         Color  : SDL.Video.Palettes.Colour)
+    is
+    begin
+        r.Set_Draw_Colour (Color);
+        r.Draw (Line => ((x1, y1), (x2, y2)));
+    end Draw_Line;
 
     -- Draw a filled SDL Rectangle
     procedure Draw_Rect (r      : in out SDL.Video.Renderers.Renderer;
@@ -474,18 +487,18 @@ package body DAGBuild.GUI.Widgets is
             st.Hot_Scope := scope;
 
             -- Update our cursor to the little text dealie
-            SDL.Inputs.Mice.Set_Cursor(DAGBuild.GUI.State.Text_Cursor);
+            SDL.Inputs.Mice.Cursors.Set_Cursor(DAGBuild.GUI.State.Text_Cursor);
 
             -- Clicking on a text field gives us keyboard focus, also 
             --  updates the cursor location.
             if st.Active_Item = NO_ITEM and st.Mouse_Down then
-                st.Active_Item := id;
+                st.Active_Item  := id;
                 st.Active_Scope := scope;
             
-                st.Kbd_Item := id;
-                st.Kbd_Scope := Scope;
+                st.Kbd_Item     := id;
+                st.Kbd_Scope    := Scope;
 
-                -- Since we got here via a click, we can set the cursor to the
+                --@TODO Since we got here via a click, we can set the cursor to the
                 --  click location.
             end if;
 
@@ -493,15 +506,14 @@ package body DAGBuild.GUI.Widgets is
 
         -- if no widget has keyboard focus, take it. 
         if st.Kbd_Item = NO_ITEM then
-            st.Kbd_Item := id;
-            st.Kbd_Scope := Scope;
+            st.Kbd_Item     := id;
+            st.Kbd_Scope    := Scope;
             
             --We now own the cursor and selection within the UIState, so can
             -- clear it out. Any changes made while we have the focus will be
             -- persisted.
-            st.Cursor_Pos := 0;
-            st.Selection_Start := 0;
-            st.Selection_End := 0;
+            st.Cursor_Start := 1;
+            st.Cursor_End   := 1;
         end if;
 
         Draw_Rect (st.Renderer,
@@ -563,32 +575,69 @@ package body DAGBuild.GUI.Widgets is
             First_Draw_Index    : Natural;
             End_Draw_Index      : Natural;
         begin
-            -- Draw the characters up to the cursor position, use width of that
-            -- texture to identify where to draw the cursor, then draw the rest
-            -- of the characters.
-            Draw_Text (r => st.Renderer,
-                    Text => UBS.To_String(UBS.Unbounded_Slice(Text, 1, UBS.Length(Text))),
-                    x => x + 4,
-                    y => y + 8,
-                    w => w,
-                    h => h,
-                    Color => st.Theme.Input_foreground);
+            if UBS.Length(Text) > 0 then
+                if st.Cursor_Start = 1 then
+                    -- cursor at front, draw line then text
+                    Draw_Line (r        => st.Renderer,
+                               x1       => x + 2,
+                               y1       => y + 2,
+                               x2       => x + 2,
+                               y2       => y + Field_Height - 2,
+                               Color    => st.Theme.EditorCursor_foreground);
+                    
+                    Draw_Text (r        => st.Renderer,
+                               Text     => UBS.To_String(Text),
+                               x        => x + 4,
+                               y        => y + 8,
+                               w        => w,
+                               h        => h,
+                               Color    => st.Theme.Input_foreground);
+                elsif st.Cursor_Start < UBS.Length(Text) then
+                    -- Draw the characters up to the cursor position, use width of that
+                    -- texture to identify where to draw the cursor, then draw the rest
+                    -- of the characters.
+                    Draw_Text (r        => st.Renderer,
+                               Text     => UBS.To_String(UBS.Unbounded_Slice(Text, 1, st.Cursor_Start)),
+                               x        => x + 4,
+                               y        => y + 8,
+                               w        => w,
+                               h        => h,
+                               Color    => st.Theme.Input_foreground);
 
-            -- Use time ticks to make the cursor blink
-            -- Draw_Line (r => st.Renderer,
-            --             x1 => x + w,
-            --             y1 => y,
-            --             x2 => x + w,
-            --             y2 => y + h,
-            --             Color => st.Theme.Input_Border);
+                    --@TODO Use time ticks to make the cursor blink
+                    Draw_Line (r        => st.Renderer,
+                               x1       => x + w,
+                               y1       => y + 2,
+                               x2       => x + w,
+                               y2       => y + Field_Height - 2,
+                               Color    => st.Theme.EditorCursor_foreground);
 
-            -- Draw_Text (r => st.Renderer,
-            --         Text => UBS.To_String(UBS.Unbounded_Slice(Text, st.Cursor_Pos + 1, UBS.Length(Text))),
-            --         x => x + 4,
-            --         y => y + 8,
-            --         w => w,
-            --         h => h,
-            --         Color => st.Theme.Input_foreground);
+                    Draw_Text (r => st.Renderer,
+                               Text => UBS.To_String(UBS.Unbounded_Slice(Text, st.Cursor_Start, UBS.Length(Text))),
+                               x => x + 4,
+                               y => y + 8,
+                               w => w,
+                               h => h,
+                               Color => st.Theme.Input_foreground);
+
+                else
+                    Draw_Text (r => st.Renderer,
+                               Text => UBS.To_String(Text),
+                               x => x + 4,
+                               y => y + 8,
+                               w => w,
+                               h => h,
+                               Color => st.Theme.Input_foreground);
+                    
+                    Draw_Line (r        => st.Renderer,
+                               x1       => x + w,
+                               y1       => y + 2,
+                               x2       => x + w,
+                               y2       => y + Field_Height - 2,
+                               Color    => st.Theme.EditorCursor_foreground);
+                end if;
+                --@TODO draw selection box
+            end if;
         end drawChars;
 
         HandleKeys : declare
@@ -624,16 +673,28 @@ package body DAGBuild.GUI.Widgets is
                         return True;
 
                     when SDL.Events.Keyboards.Code_Left =>
-                        --@TODO move cursor left if we have keyboard focus
-                        null;
+                        if st.Cursor_Start > 1 then
+                            st.Cursor_Start := st.Cursor_Start - 1;
+                            st.Cursor_End := st.Cursor_Start;
+                        end if;
                     
                     when SDL.Events.Keyboards.Code_Right =>
-                        --@TODO move cursor right if we have keyboard focus
-                        null;
+                        if st.Cursor_Start < UBS.Length(Text) then
+                            st.Cursor_Start := st.Cursor_Start + 1;
+                            st.Cursor_End := st.Cursor_Start;
+                        end if;
 
                     when SDL.Events.Keyboards.Code_Backspace =>
-                        --@TODO backspace if we have keyboard focus
-                        null;
+                        if st.Cursor_Start > 1 then
+                            UBS.Delete(Text, st.Cursor_Start - 1, st.Cursor_End);
+                        end if;
+                        --@TODO handle selection
+                    
+                    when SDL.Events.Keyboards.Code_Delete =>
+                        if st.Cursor_Start < UBS.Length(Text) then
+                            UBS.Delete (Text, st.Cursor_Start, st.Cursor_End);
+                        end if;
+                        --@TODO handle selection
 
                     when others =>
                         --Ada.Text_IO.Put_Line("other: " & st.Kbd_Pressed'Image);
@@ -643,36 +704,51 @@ package body DAGBuild.GUI.Widgets is
                 -- Handle text event if there was one
                 if UBS.Length(st.Kbd_Text) /= 0 then
                     editText : declare
-                        canFit : Natural;
+                        Can_Fit     : Integer;
+                        Select_Len  : Natural := st.Cursor_End - st.Cursor_Start;
                     begin
-                        -- make sure we aren't already at max length
-                        if Max_Length = 0 then
-                            canFit := Natural'Last;
+                        -- determine room to insert/append
+                        if Max_Length = 0 or Max_Length > UBS.Length (st.Kbd_Text) then
+                            Can_Fit := UBS.Length (st.Kbd_Text);
                         else
-                            canFit := (if UBS.Length(Text) >= Max_Length then 0 
-                                        else Max_Length - UBS.Length(Text));
+                            -- if there's a selection that we're about to destroy,
+                            -- then we can add the length of that selection to
+                            -- the space we have.
+                            Can_Fit := Max_Length + Select_Len - UBS.Length (Text);
+                            Can_Fit := (if Can_Fit < 0 then 0 else Can_Fit);
                         end if;
 
-                        -- If cursor is at the end, append the text, otherwise
-                        -- insert.
-                        --@TODO - if there's a selection, delete the selection
-                        -- first.
-                        if st.Cursor_Pos = UBS.Length(Text) then
-                            if UBS.Length(st.Kbd_Text) > canFit then
-                                UBS.Append(Text, UBS.Head(st.Kbd_Text, canFit));
+                        Ada.Text_IO.Put_Line("Typing " & UBS.To_String(st.Kbd_Text));
+                        Ada.Text_IO.Put_Line("Cursor_Start: " & st.Cursor_Start'Image);
+                        Ada.Text_IO.Put_Line("Cursor_End:   " & st.Cursor_End'Image);
+                        Ada.Text_IO.Put_Line("Can_Fit:      " & Can_Fit'Image);
+                        
+                        if Can_Fit > 0 then
+                            if st.Cursor_Start = UBS.Length(Text) then
+                                -- Cursor at end, append the new text
+                                UBS.Append(Text, UBS.Head(st.Kbd_Text, Can_Fit));
+
+                                st.Cursor_Start := UBS.Length(Text);
+                                st.Cursor_End   := st.Cursor_Start;
                             else
-                                UBS.Append(Text, st.Kbd_Text);
-                            end if;
-                        else
-                            if UBS.Length(st.Kbd_Text) > canFit then
-                                UBS.Insert(Text, st.Cursor_Pos, UBS.To_String(UBS.Head(st.Kbd_Text, canFit)));
-                            else
-                                --UBS.Append(Text, st.Kbd_Text);
-                                UBS.Insert(Text, st.Cursor_Pos, UBS.To_String(st.Kbd_Text));
+                                -- Cursor elsewhere
+                                if st.Cursor_Start /= st.Cursor_End then
+                                    -- There's a selection
+                                    UBS.Replace_Slice (Source   => Text, 
+                                                       Low      => st.Cursor_Start,
+                                                       High     => st.Cursor_End,
+                                                       By       => UBS.To_String(UBS.Head(st.Kbd_Text, Can_Fit)));
+                                else
+                                    UBS.Insert (Source      => Text,
+                                                Before      => st.Cursor_Start,
+                                                New_Item    => UBS.To_String(UBS.Head(st.Kbd_Text, Can_Fit)));
+
+                                    st.Cursor_Start := st.Cursor_Start + Can_Fit;
+                                end if;
                             end if;
                         end if;
 
-                        st.Kbd_Text := UBS.Null_Unbounded_String;
+                        st.Kbd_Text     := UBS.Null_Unbounded_String;
                     end editText;
                 end if;
             end if;

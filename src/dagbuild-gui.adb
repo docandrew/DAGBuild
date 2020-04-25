@@ -8,7 +8,7 @@ with SDL.Events.Keyboards;
 with SDL.Events.Mice;
 with SDL.Hints;
 with SDL.Inputs.Keyboards;
-with SDL.Inputs.Mice;
+with SDL.Inputs.Mice.Cursors;
 with SDL.TTFs.Makers;
 with SDL.Video.Palettes;
 with SDL.Video.Renderers;
@@ -78,7 +78,7 @@ package body DAGBuild.GUI is
         -- switch back to the arrow cursor. If it remains hot, we'll leave it
         -- to whatever it was set to by the widget that may have set it last.
         if st.Hot_Item = NO_ITEM then
-            SDL.Inputs.Mice.Set_Cursor(DAGBuild.GUI.State.Arrow_Cursor);
+            SDL.Inputs.Mice.Cursors.Set_Cursor(DAGBuild.GUI.State.Arrow_Cursor);
         end if;
 
         DAGBuild.GUI.State.Exit_Scope(st);
@@ -271,11 +271,11 @@ package body DAGBuild.GUI is
         SDL.Video.Renderers.Makers.Create (GUI_State.Renderer, Window);
 
         -- Create a cursor for the text fields
-        SDL.Inputs.Mice.Create_System_Cursor (Self          => DAGBuild.GUI.State.Arrow_Cursor,
-                                              Cursor_Name   => SDL.Inputs.Mice.ARROW);
+        SDL.Inputs.Mice.Cursors.Create_System_Cursor (Self  => DAGBuild.GUI.State.Arrow_Cursor,
+                                              Cursor_Name   => SDL.Inputs.Mice.Cursors.Arrow);
 
-        SDL.Inputs.Mice.Create_System_Cursor (Self          => DAGBuild.GUI.State.Text_Cursor,
-                                              Cursor_Name   => SDL.Inputs.Mice.IBEAM);
+        SDL.Inputs.Mice.Cursors.Create_System_Cursor (Self  => DAGBuild.GUI.State.Text_Cursor,
+                                              Cursor_Name   => SDL.Inputs.Mice.Cursors.I_Beam);
 
         -- Load Font used by widgets
         SDL.TTFs.Makers.Create (Font        => DAGBuild.GUI.Widgets.DAG_Font,

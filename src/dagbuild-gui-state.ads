@@ -3,7 +3,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with SDL.Events;
 with SDL.Events.Keyboards;
-with SDL.Inputs.Mice;
+with SDL.Inputs.Mice.Cursors;
 with SDL.Video.Renderers;
 
 with DAGBuild.Settings;
@@ -24,8 +24,8 @@ package DAGBuild.GUI.State is
     NO_SCOPE        : constant Scope := 0;
     INVALID_SCOPE   : constant Scope := -1;
 
-    Arrow_Cursor    : SDL.Inputs.Mice.Cursor;
-    Text_Cursor     : SDL.Inputs.Mice.Cursor;
+    Arrow_Cursor    : SDL.Inputs.Mice.Cursors.Cursor;
+    Text_Cursor     : SDL.Inputs.Mice.Cursors.Cursor;
 
     -- Keep track of last assigned IDs in each scope so we can resume once
     -- out of scope.
@@ -49,11 +49,10 @@ package DAGBuild.GUI.State is
     -- @field Kbd_Heartbeat lets us know if the previously focused widget was
     --  drawn.
     -- @field Kbd_Text is text entered from the keyboard.
-    -- @field Cursor_Pos is the cursor position within the focused text field.
-    -- @field Selection_Start is the start position of selected text within the
-    --  focused text field.
-    -- @field Selection_End is the end position of selected text within the
-    --  focused text field.
+    -- @field Cursor_Start is the cursor position within the focused text field.
+    -- @field Cursor_End is the end position of selected text within the
+    --  focused text field. If Cursor_Start = Cursor_End, then we just have a
+    --  single cursor, not a selection to overwrite.
     -- @field Last_Widget is the ID of the last widget handled
     -- @field Last_Scope is the scope of the last widget handled
     -- @field Done is set to True if we are exiting the program.
@@ -82,9 +81,8 @@ package DAGBuild.GUI.State is
         Kbd_Heartbeat   : Boolean := False;
         Kbd_Text        : Unbounded_String;
 
-        Cursor_Pos      : Natural;
-        Selection_Start : Natural;
-        Selection_End   : Natural;
+        Cursor_Start    : Positive := 1;
+        Cursor_End      : Positive := 1;
 
         Last_Widget     : ID;
         Last_Scope      : Scope;
