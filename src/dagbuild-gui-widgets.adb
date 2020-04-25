@@ -497,7 +497,7 @@ package body DAGBuild.GUI.Widgets is
         h : SDL.Dimension;
 
     begin
-        SDL.Inputs.Keyboards.Set_Text_Input_Rectangle((x, y, Field_Width, Field_Height));
+        --SDL.Inputs.Keyboards.Set_Text_Input_Rectangle((x, y, Field_Width, Field_Height));
 
         -- Check for mouseover/click
         if Region_Hit(st, x, y, Field_Width, Field_Height) then
