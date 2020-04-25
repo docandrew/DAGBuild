@@ -571,6 +571,7 @@ package body DAGBuild.GUI.Widgets is
         --@TODO Draw the cursor in the right spot
         --@TODO Draw the selection highlight
         --@TODO Clip the number of characters by what we can actually display
+        --@TODO only draw cursor if we are active
         drawChars : declare
             First_Draw_Index    : Natural;
             End_Draw_Index      : Natural;
@@ -579,9 +580,9 @@ package body DAGBuild.GUI.Widgets is
                 if st.Cursor_Start = 1 then
                     -- cursor at front, draw line then text
                     Draw_Line (r        => st.Renderer,
-                               x1       => x + 2,
+                               x1       => x + 4,
                                y1       => y + 2,
-                               x2       => x + 2,
+                               x2       => x + 4,
                                y2       => y + Field_Height - 2,
                                Color    => st.Theme.EditorCursor_foreground);
                     
@@ -592,12 +593,12 @@ package body DAGBuild.GUI.Widgets is
                                w        => w,
                                h        => h,
                                Color    => st.Theme.Input_foreground);
-                elsif st.Cursor_Start < UBS.Length(Text) then
+                elsif st.Cursor_Start <= UBS.Length(Text) then
                     -- Draw the characters up to the cursor position, use width of that
                     -- texture to identify where to draw the cursor, then draw the rest
                     -- of the characters.
                     Draw_Text (r        => st.Renderer,
-                               Text     => UBS.To_String(UBS.Unbounded_Slice(Text, 1, st.Cursor_Start)),
+                               Text     => UBS.To_String(UBS.Unbounded_Slice(Text, 1, st.Cursor_Start - 1)),
                                x        => x + 4,
                                y        => y + 8,
                                w        => w,
@@ -606,15 +607,15 @@ package body DAGBuild.GUI.Widgets is
 
                     --@TODO Use time ticks to make the cursor blink
                     Draw_Line (r        => st.Renderer,
-                               x1       => x + w,
+                               x1       => x + 4 + w,
                                y1       => y + 2,
-                               x2       => x + w,
+                               x2       => x + w + 4,
                                y2       => y + Field_Height - 2,
                                Color    => st.Theme.EditorCursor_foreground);
 
                     Draw_Text (r => st.Renderer,
                                Text => UBS.To_String(UBS.Unbounded_Slice(Text, st.Cursor_Start, UBS.Length(Text))),
-                               x => x + 4,
+                               x => x + 4 + w,
                                y => y + 8,
                                w => w,
                                h => h,
@@ -630,9 +631,9 @@ package body DAGBuild.GUI.Widgets is
                                Color => st.Theme.Input_foreground);
                     
                     Draw_Line (r        => st.Renderer,
-                               x1       => x + w,
+                               x1       => x + 4 + w,
                                y1       => y + 2,
-                               x2       => x + w,
+                               x2       => x + 4 + w,
                                y2       => y + Field_Height - 2,
                                Color    => st.Theme.EditorCursor_foreground);
                 end if;
@@ -679,19 +680,21 @@ package body DAGBuild.GUI.Widgets is
                         end if;
                     
                     when SDL.Events.Keyboards.Code_Right =>
-                        if st.Cursor_Start < UBS.Length(Text) then
+                        if st.Cursor_Start <= UBS.Length(Text) then
                             st.Cursor_Start := st.Cursor_Start + 1;
                             st.Cursor_End := st.Cursor_Start;
                         end if;
 
                     when SDL.Events.Keyboards.Code_Backspace =>
                         if st.Cursor_Start > 1 then
-                            UBS.Delete(Text, st.Cursor_Start - 1, st.Cursor_End);
+                            UBS.Delete(Text, st.Cursor_Start - 1, st.Cursor_End - 1);
+                            st.Cursor_Start := st.Cursor_Start - 1;
+                            st.Cursor_End := st.Cursor_End - 1;
                         end if;
                         --@TODO handle selection
                     
                     when SDL.Events.Keyboards.Code_Delete =>
-                        if st.Cursor_Start < UBS.Length(Text) then
+                        if st.Cursor_Start <= UBS.Length(Text) then
                             UBS.Delete (Text, st.Cursor_Start, st.Cursor_End);
                         end if;
                         --@TODO handle selection
@@ -703,6 +706,10 @@ package body DAGBuild.GUI.Widgets is
 
                 -- Handle text event if there was one
                 if UBS.Length(st.Kbd_Text) /= 0 then
+                    Ada.Text_IO.Put_Line("Typing " & UBS.To_String(st.Kbd_Text));
+                    Ada.Text_IO.Put_Line("Cursor_Start: " & st.Cursor_Start'Image);
+                    Ada.Text_IO.Put_Line("Cursor_End:   " & st.Cursor_End'Image);
+
                     editText : declare
                         Can_Fit     : Integer;
                         Select_Len  : Natural := st.Cursor_End - st.Cursor_Start;
@@ -718,9 +725,6 @@ package body DAGBuild.GUI.Widgets is
                             Can_Fit := (if Can_Fit < 0 then 0 else Can_Fit);
                         end if;
 
-                        Ada.Text_IO.Put_Line("Typing " & UBS.To_String(st.Kbd_Text));
-                        Ada.Text_IO.Put_Line("Cursor_Start: " & st.Cursor_Start'Image);
-                        Ada.Text_IO.Put_Line("Cursor_End:   " & st.Cursor_End'Image);
                         Ada.Text_IO.Put_Line("Can_Fit:      " & Can_Fit'Image);
                         
                         if Can_Fit > 0 then
@@ -744,6 +748,7 @@ package body DAGBuild.GUI.Widgets is
                                                 New_Item    => UBS.To_String(UBS.Head(st.Kbd_Text, Can_Fit)));
 
                                     st.Cursor_Start := st.Cursor_Start + Can_Fit;
+                                    st.Cursor_End := st.Cursor_Start;
                                 end if;
                             end if;
                         end if;
