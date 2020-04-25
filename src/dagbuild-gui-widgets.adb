@@ -275,11 +275,11 @@ package body DAGBuild.GUI.Widgets is
         return False;
     end Button;
 
-    function Slider(st  : in out DAGBuild.GUI.State.UIState;
-                    x   : SDL.Natural_Coordinate;
-                    y   : SDL.Natural_Coordinate;
-                    Max : Integer;
-                    Val : in out Integer) return Boolean
+    function Vertical_Slider(st  : in out DAGBuild.GUI.State.UIState;
+                             x   : SDL.Natural_Coordinate;
+                             y   : SDL.Natural_Coordinate;
+                             Max : Integer;
+                             Val : in out Integer) return Boolean
     is
         use DAGBuild.GUI.State;
 
@@ -418,7 +418,7 @@ package body DAGBuild.GUI.Widgets is
         st.Last_Scope := Scope;
 
         return False;
-    end Slider;
+    end Vertical_Slider;
 
     -- Draw a label with the given text a specific location
     procedure Label(st              : in out DAGBuild.GUI.State.UIState;
@@ -472,7 +472,7 @@ package body DAGBuild.GUI.Widgets is
         
         -- Size (in pixels) of the field. @TODO: Need to scale this by ppi
         Field_Width     : constant SDL.Positive_Dimension := SDL.Positive_Dimension(DAGBuild.Settings.Font_Size) * 
-                                                                 SDL.Positive_Dimension(Display_Length);
+                                                                SDL.Positive_Dimension(Display_Length);
         Field_Height    : constant SDL.Positive_Dimension := 2 * SDL.Positive_Dimension(DAGBuild.Settings.Font_Size);
 
         w : SDL.Dimension;
@@ -753,7 +753,7 @@ package body DAGBuild.GUI.Widgets is
                             end if;
                         end if;
 
-                        st.Kbd_Text     := UBS.Null_Unbounded_String;
+                        st.Kbd_Text := UBS.Null_Unbounded_String;
                     end editText;
                 end if;
             end if;

@@ -174,15 +174,15 @@ package body DAGBuild.GUI is
         end if;
 
         --Slider test
-        if Widgets.Slider(st, 500, 40, 255, Integer(Red)) then
+        if Widgets.Vertical_Slider(st, 500, 40, 255, Integer(Red)) then
             Clear_Color := (Red, Green, Blue, 255);
         end if;
 
-        if Widgets.Slider(st, 550, 40, 255, Integer(Green)) then
+        if Widgets.Vertical_Slider(st, 550, 40, 255, Integer(Green)) then
             Clear_Color := (Red, Green, Blue, 255);
         end if;
 
-        if Widgets.Slider(st, 600, 40, 255, Integer(Blue)) then
+        if Widgets.Vertical_Slider(st, 600, 40, 255, Integer(Blue)) then
             Clear_Color := (Red, Green, Blue, 255);
         end if;
 
