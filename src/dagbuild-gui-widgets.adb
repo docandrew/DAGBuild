@@ -124,26 +124,38 @@ package body DAGBuild.GUI.Widgets is
     end Draw_Text;
 
     -- Draw a button, return True if clicked, False otherwise
-    function Button (st     : in out DAGBuild.GUI.State.UIState;
-                     x      : SDL.Natural_Coordinate;
-                     y      : SDL.Natural_Coordinate;
-                     Label  : String := "") return Boolean
+    function Button (st             : in out DAGBuild.GUI.State.UIState;
+                     x              : SDL.Natural_Coordinate;
+                     y              : SDL.Natural_Coordinate;
+                     Label          : String := "";
+                     Button_Width   : SDL.Natural_Coordinate := 64;
+                     Button_Height  : SDL.Natural_Coordinate := 40) return Boolean
     is
         use DAGBuild.GUI.State;
 
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
         Scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
+        
         Dummy_w : SDL.Positive_Dimension;
         Dummy_h : SDL.Positive_Dimension;
+        
+        Button_Shadow_Offset : constant SDL.Positive_Dimension := 2;
+        
+        -- Button_Width    : constant SDL.Positive_Dimension := 64;
+        -- Button_Height   : constant SDL.Positive_Dimension := 40;
+
+        --@TODO make this a function of font size
+        Label_x : constant SDL.Positive_Dimension := x + 4;
+        Label_y : constant SDL.Positive_Dimension := y + 10;
     begin
         --Ada.Text_IO.Put_Line("Creating new button with ID: " & id'Image & " scope: " & scope'Image);
 
-        if Region_Hit (st, x, y, 64, 48) then
-            st.Hot_Item := id;
-            st.Hot_Scope := Scope;
+        if Region_Hit (st, x, y, Button_Width, Button_Height) then
+            st.Hot_Item     := id;
+            st.Hot_Scope    := Scope;
 
             if st.Active_Item = NO_ITEM and st.Mouse_Down then
-                st.Active_Item := id;
+                st.Active_Item  := id;
                 st.Active_Scope := Scope;
             end if;
         end if;
@@ -153,45 +165,45 @@ package body DAGBuild.GUI.Widgets is
 
         -- if no widget has keyboard focus, take it
         if st.Kbd_Item = NO_ITEM then
-            st.Kbd_Item := id;
-            st.Kbd_Scope := Scope;
+            st.Kbd_Item     := id;
+            st.Kbd_Scope    := Scope;
         end if;
 
         -- if we have keyboard focus, show it and update heartbeat
         if st.Kbd_Item = id and st.Kbd_Scope = Scope then
-            Outline_Rect(st.Renderer,
-                        x-2,
-                        y-2,
-                        70,
-                        54,
-                        st.Theme.InputOption_activeBorder);
+            Outline_Rect (st.Renderer,
+                          x - 2,
+                          y - 2,
+                          Button_Width + 6,
+                          Button_Height + 6,
+                          st.Theme.InputOption_activeBorder);
 
             st.Kbd_Heartbeat := True;
         end if;
         
         -- Render a button shadow
-        Draw_Rect(st.Renderer,
-                    x+2,
-                    y+2,
-                    64,
-                    48,
-                    st.Theme.Widget_Shadow);
+        Draw_Rect (st.Renderer,
+                   x + Button_Shadow_Offset,
+                   y + Button_Shadow_Offset,
+                   Button_Width,
+                   Button_Height,
+                   st.Theme.Widget_Shadow);
         
         if st.Hot_Item = id and st.Hot_Scope = Scope then
             if st.Active_Item = id and st.Active_Scope = Scope then
                 -- Hot and Active button - depress
-                Draw_Rect(st.Renderer,
-                          x + 2,
-                          y + 2,
-                          64,
-                          48,
-                          st.Theme.Button_HoverBackground);
+                Draw_Rect (st.Renderer,
+                           x + 2,
+                           y + 2,
+                           Button_Width,
+                           Button_Height,
+                           st.Theme.Button_HoverBackground);
 
                 -- Draw Label
                 Draw_Text (r => st.Renderer,
                            Text => Label,
-                           x => x + 4 + 2,
-                           y => y + 8 + 2,
+                           x => Label_x + 2,
+                           y => Label_y + 2,
                            w => Dummy_w,
                            h => Dummy_h,
                            Color => st.Theme.Button_Foreground);
@@ -201,14 +213,14 @@ package body DAGBuild.GUI.Widgets is
                 Draw_Rect(st.Renderer,
                           x,
                           y,
-                          64,
-                          48,
+                          Button_Width,
+                          Button_Height,
                           st.Theme.Button_HoverBackground);
 
                 Draw_Text (r => st.Renderer,
                            Text => Label,
-                           x => x + 4,
-                           y => y + 8,
+                           x => Label_x,
+                           y => Label_y,
                            w => Dummy_w,
                            h => Dummy_h,
                            Color => st.Theme.Button_Foreground);
@@ -219,14 +231,14 @@ package body DAGBuild.GUI.Widgets is
             Draw_Rect (st.Renderer,
                        x,
                        y,
-                       64,
-                       48,
+                       Button_Width,
+                       Button_Height,
                        st.Theme.Button_Background);
 
             Draw_Text (r => st.Renderer,
                        Text => Label,
-                       x => x + 4,
-                       y => y + 8,
+                       x => Label_x,
+                       y => Label_y,
                        w => Dummy_w,
                        h => Dummy_h,
                        Color => st.Theme.Button_Foreground);
@@ -286,11 +298,17 @@ package body DAGBuild.GUI.Widgets is
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
         scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
 
-        ypos    : constant SDL.Natural_Coordinate := SDL.Natural_Coordinate(((256 - 16) * Val) / Max);
+        Slider_Width    : constant SDL.Positive_Dimension := 32;
+        Slider_Height   : constant SDL.Positive_Dimension := 255;
         
+        Button_Width    : constant SDL.Positive_Dimension := 16;
+        Button_Height   : constant SDL.Positive_Dimension := 16;
+        
+        ypos : constant SDL.Natural_Coordinate :=
+            SDL.Natural_Coordinate((Integer(Slider_Height - 16) * Val) / Max);
     begin
 
-        if Region_Hit(st, x + 8, y + 8, 16, 255) then
+        if Region_Hit(st, x + 8, y + 8, 16, Slider_Height) then
             st.Hot_Item := id;
             st.Hot_Scope := scope;
 
@@ -309,10 +327,10 @@ package body DAGBuild.GUI.Widgets is
         -- if we have keyboard focus, show it and update heartbeat
         if st.Kbd_Item = id and st.Kbd_Scope = Scope then
             Outline_Rect(st.Renderer,
-                        x-2,
-                        y-2,
-                        36,
-                        256+16+4,
+                        x - 2,
+                        y - 2,
+                        Slider_Width + 4,
+                        Slider_Height + 16 + 4,
                         st.Theme.InputOption_activeBorder);
 
             st.Kbd_Heartbeat := True;
@@ -322,25 +340,25 @@ package body DAGBuild.GUI.Widgets is
         Draw_Rect (st.Renderer,
                    x,
                    y,
-                   32,
-                   256 + 16,
+                   Slider_Width,
+                   Slider_Height + 16,
                    st.Theme.Scrollbar_shadow);
 
-        -- Highlight the slider
+        -- Highlight the button
         if (st.Hot_Item = id and st.Hot_Scope = Scope) or 
             (st.Active_Item = id and st.Active_Scope = Scope) then
             Draw_Rect ( st.Renderer,
                         x + 8,
                         y + 8 + ypos,
-                        16,
-                        16,
+                        Button_Width,
+                        Button_Height,
                         st.Theme.ScrollbarSlider_activeBackground);
         else
             Draw_Rect ( st.Renderer,
                         x + 8, 
                         y + 8 + ypos,
-                        16,
-                        16,
+                        Button_Width,
+                        Button_Height,
                         st.Theme.ScrollbarSlider_background);
         end if;
 
