@@ -479,8 +479,8 @@ package body DAGBuild.GUI.Widgets is
                          Text            : in out Ada.Strings.Unbounded.Unbounded_String;
                          x               : SDL.Natural_Coordinate;
                          y               : SDL.Natural_Coordinate;
-                         Display_Length  : Natural := 10;
-                         Max_Length      : Natural := 10) return Boolean
+                         Display_Length  : Natural := 20;
+                         Max_Length      : Natural := 20) return Boolean
     is
         package UBS renames Ada.Strings.Unbounded;
         use DAGBuild.GUI.State;
@@ -492,12 +492,15 @@ package body DAGBuild.GUI.Widgets is
         Field_Width     : constant SDL.Positive_Dimension := SDL.Positive_Dimension(DAGBuild.Settings.Font_Size) * 
                                                                 SDL.Positive_Dimension(Display_Length);
         Field_Height    : constant SDL.Positive_Dimension := 2 * SDL.Positive_Dimension(DAGBuild.Settings.Font_Size);
+        
+        -- How far inside the field to start drawing characters
+        Text_Draw_Offset : constant SDL.Positive_Dimension := 4;
+        
+        Cursor_Click_Update : Boolean := False;
 
         w : SDL.Dimension;
         h : SDL.Dimension;
-
     begin
-        --SDL.Inputs.Keyboards.Set_Text_Input_Rectangle((x, y, Field_Width, Field_Height));
 
         -- Check for mouseover/click
         if Region_Hit(st, x, y, Field_Width, Field_Height) then
@@ -516,8 +519,14 @@ package body DAGBuild.GUI.Widgets is
                 st.Kbd_Item     := id;
                 st.Kbd_Scope    := Scope;
 
-                --@TODO Since we got here via a click, we can set the cursor to the
-                --  click location.
+                -- Since we got here via a click, we can eventually set the cursor
+                --  to the
+                --  click location. We don't know the details of text rendering
+                --  yet in this part of the function, so we'll make a point to
+                --  update the cursor later.
+                Cursor_Click_Update := True;
+                st.Cursor_Start := UBS.Length(Text) + 1;
+                st.Cursor_End := st.Cursor_Start;
             end if;
 
         end if;
@@ -528,14 +537,11 @@ package body DAGBuild.GUI.Widgets is
             st.Kbd_Scope    := Scope;
             
             --We now own the cursor and selection within the UIState, so can
-            -- clear it out. Any changes made while we have the focus will be
+            -- set it to the end of the field.
+            --Any changes made while we have the focus will be
             -- persisted.
-            --@TODO see the most natural way of handling this. Should we select
-            -- everything by default?
-            --st.Cursor_Start := 1;
-            --st.Cursor_End   := 1;
             st.Cursor_Start := UBS.Length(Text) + 1;
-            st.Cursor_End   := UBS.Length(Text) + 1;
+            st.Cursor_End   := st.Cursor_Start;
         end if;
 
         Draw_Rect (st.Renderer,
@@ -590,82 +596,136 @@ package body DAGBuild.GUI.Widgets is
         -- end if;
 
         -- Draw the characters
-        --@TODO Draw the cursor in the right spot
         --@TODO Draw the selection highlight
         --@TODO Clip the number of characters by what we can actually display
-        --@TODO only draw cursor if we are active
         drawChars : declare
             First_Draw_Index    : Natural;
             End_Draw_Index      : Natural;
+            Total_Text_Width    : SDL.Positive_Dimension;
         begin
-            if UBS.Length(Text) > 0 then
+            if UBS.Length(Text) > 0 and not Cursor_Click_Update then
                 if st.Cursor_Start = 1 then
                     -- cursor at front, draw line then text
                     if st.Kbd_Item = id and st.Kbd_Scope = Scope then
                         Draw_Line (r        => st.Renderer,
-                                   x1       => x + 4,
+                                   x1       => x + Text_Draw_Offset,
                                    y1       => y + 2,
-                                   x2       => x + 4,
+                                   x2       => x + Text_Draw_Offset,
                                    y2       => y + Field_Height - 2,
                                    Color    => st.Theme.EditorCursor_foreground);
                     end if;
                     
                     Draw_Text (r        => st.Renderer,
                                Text     => UBS.To_String(Text),
-                               x        => x + 4,
+                               x        => x + Text_Draw_Offset,
                                y        => y + 8,
                                w        => w,
                                h        => h,
                                Color    => st.Theme.Input_foreground);
+
+                    --Total_Text_Width := w;
                 elsif st.Cursor_Start <= UBS.Length(Text) then
                     -- Draw the characters up to the cursor position, use width of that
                     -- texture to identify where to draw the cursor, then draw the rest
                     -- of the characters.
                     Draw_Text (r        => st.Renderer,
                                Text     => UBS.To_String(UBS.Unbounded_Slice(Text, 1, st.Cursor_Start - 1)),
-                               x        => x + 4,
+                               x        => x + Text_Draw_Offset,
                                y        => y + 8,
                                w        => w,
                                h        => h,
                                Color    => st.Theme.Input_foreground);
 
+                    --Total_Text_Width := w;
+
                     --@TODO Use time ticks to make the cursor blink
                     if st.Kbd_Item = id and st.Kbd_Scope = Scope then
                         Draw_Line (r        => st.Renderer,
-                                   x1       => x + 4 + w,
+                                   x1       => x + Text_Draw_Offset + w,
                                    y1       => y + 2,
-                                   x2       => x + w + 4,
+                                   x2       => x + Text_Draw_Offset + w,
                                    y2       => y + Field_Height - 2,
                                    Color    => st.Theme.EditorCursor_foreground);
                     end if;
 
                     Draw_Text (r => st.Renderer,
                                Text => UBS.To_String(UBS.Unbounded_Slice(Text, st.Cursor_Start, UBS.Length(Text))),
-                               x => x + 4 + w,
+                               x => x + Text_Draw_Offset + w,
                                y => y + 8,
                                w => w,
                                h => h,
                                Color => st.Theme.Input_foreground);
 
+                    --Total_Text_Width := Total_Text_Width + w;
+
                 else
+                    -- Cursor at end, draw all characters then plop the cursor
+                    -- down.
                     Draw_Text (r => st.Renderer,
                                Text => UBS.To_String(Text),
-                               x => x + 4,
+                               x => x + Text_Draw_Offset,
                                y => y + 8,
                                w => w,
                                h => h,
                                Color => st.Theme.Input_foreground);
                     
+                    --Total_Text_Width := w;
+
                     if st.Kbd_Item = id and st.Kbd_Scope = Scope then
                         Draw_Line (r        => st.Renderer,
-                                   x1       => x + 4 + w,
+                                   x1       => x + Text_Draw_Offset + w,
                                    y1       => y + 2,
-                                   x2       => x + 4 + w,
+                                   x2       => x + Text_Draw_Offset + w,
                                    y2       => y + Field_Height - 2,
                                    Color    => st.Theme.EditorCursor_foreground);
                     end if;
                 end if;
-                --@TODO draw selection box
+
+            elsif UBS.Length(Text) > 0 and Cursor_Click_Update then
+                -- Need to update cursor location, so render the text first to
+                -- determine it's width in pixels, then update cursor location
+                -- to be drawn on next frame.
+                Draw_Text (r => st.Renderer,
+                           Text => UBS.To_String(Text),
+                           x => x + Text_Draw_Offset,
+                           y => y + 8,
+                           w => w,
+                           h => h,
+                           Color => st.Theme.Input_foreground);
+
+                if st.Mouse_x < x + Text_Draw_Offset then
+                    -- clicked to the left of the text
+                    st.Cursor_Start := 1;
+                    st.Cursor_End := st.Cursor_Start;
+                elsif st.Mouse_x < x + w then
+                    -- clicked somewhere in the middle of the text.
+                    -- interpolate cursor position within the rendered text
+                    --@TODO the cursor position here is slightly off. It's just OK
+                    -- with variable-width fonts.
+                    determinePosition: declare
+                        Relative_Mouse_Pos  : SDL.Positive_Coordinate := st.Mouse_x - x;
+                        Pixels_Per_Char     : SDL.Positive_Coordinate := w / SDL.Positive_Coordinate(UBS.Length(Text));
+                        Approx_Click_Char   : Positive := Positive(Relative_Mouse_Pos / Pixels_Per_Char);
+                    begin
+                        st.Cursor_Start := Approx_Click_Char;
+                        st.Cursor_End := st.Cursor_Start;
+                    end determinePosition;
+
+                else
+                    -- clicked to the right of the text
+                    st.Cursor_Start := UBS.Length(Text) + 1;
+                    st.Cursor_End := st.Cursor_Start;
+                end if;
+            else
+                -- No text, just draw the cursor at position 1 if we're active
+                if st.Kbd_Item = id and st.Kbd_Scope = Scope then
+                    Draw_Line (r        => st.Renderer,
+                               x1       => x + Text_Draw_Offset,
+                               y1       => y + 2,
+                               x2       => x + Text_Draw_Offset,
+                               y2       => y + Field_Height - 2,
+                               Color    => st.Theme.EditorCursor_foreground);
+                end if;
             end if;
         end drawChars;
 
@@ -742,16 +802,16 @@ package body DAGBuild.GUI.Widgets is
 
                 -- Handle text event if there was one
                 if UBS.Length(st.Kbd_Text) /= 0 then
-                    Ada.Text_IO.Put_Line("Typing " & UBS.To_String(st.Kbd_Text));
-                    Ada.Text_IO.Put_Line("Cursor_Start: " & st.Cursor_Start'Image);
-                    Ada.Text_IO.Put_Line("Cursor_End:   " & st.Cursor_End'Image);
+                    -- Ada.Text_IO.Put_Line("Typing " & UBS.To_String(st.Kbd_Text));
+                    -- Ada.Text_IO.Put_Line("Cursor_Start: " & st.Cursor_Start'Image);
+                    -- Ada.Text_IO.Put_Line("Cursor_End:   " & st.Cursor_End'Image);
 
                     editText : declare
                         Can_Fit     : Integer;
                         Select_Len  : Natural := st.Cursor_End - st.Cursor_Start;
                     begin
-                        Ada.Text_IO.Put_Line("Max Length:         " & Max_Length'Image);
-                        Ada.Text_IO.Put_Line("st.Kbd_Text Length: " & UBS.Length(st.Kbd_Text)'Image);
+                        -- Ada.Text_IO.Put_Line("Max Length:         " & Max_Length'Image);
+                        -- Ada.Text_IO.Put_Line("st.Kbd_Text Length: " & UBS.Length(st.Kbd_Text)'Image);
                         -- determine room to insert/append
                         if Max_Length = 0 then
                             Can_Fit := UBS.Length (st.Kbd_Text);

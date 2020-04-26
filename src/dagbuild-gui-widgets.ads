@@ -42,7 +42,7 @@ package DAGBuild.GUI.Widgets is
                          Text            : in out Ada.Strings.Unbounded.Unbounded_String;
                          x               : SDL.Natural_Coordinate;
                          y               : SDL.Natural_Coordinate;
-                         Display_Length  : Natural := 10;
-                         Max_Length      : Natural := 10) return Boolean;
+                         Display_Length  : Natural := 20;
+                         Max_Length      : Natural := 20) return Boolean;
 
 end DAGBuild.GUI.Widgets;
