@@ -81,8 +81,9 @@ package DAGBuild.GUI.State is
         Kbd_Heartbeat   : Boolean := False;
         Kbd_Text        : Unbounded_String;
 
-        Cursor_Start    : Positive := 1;
-        Cursor_End      : Positive := 1;
+        Cursor_Pos      : Positive := 1;
+        Selection_Start : Positive := 1;
+        Selection_End   : Positive := 1;
 
         Last_Widget     : ID;
         Last_Scope      : Scope;

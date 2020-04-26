@@ -525,8 +525,8 @@ package body DAGBuild.GUI.Widgets is
                 --  yet in this part of the function, so we'll make a point to
                 --  update the cursor later.
                 Cursor_Click_Update := True;
-                st.Cursor_Start := UBS.Length(Text) + 1;
-                st.Cursor_End := st.Cursor_Start;
+                st.Cursor_Pos := UBS.Length(Text) + 1;
+                --st.Cursor_End := st.Cursor_Start;
             end if;
 
         end if;
@@ -540,8 +540,8 @@ package body DAGBuild.GUI.Widgets is
             -- set it to the end of the field.
             --Any changes made while we have the focus will be
             -- persisted.
-            st.Cursor_Start := UBS.Length(Text) + 1;
-            st.Cursor_End   := st.Cursor_Start;
+            st.Cursor_Pos := UBS.Length(Text) + 1;
+            --st.Cursor_End   := st.Cursor_Start;
         end if;
 
         Draw_Rect (st.Renderer,
@@ -596,7 +596,18 @@ package body DAGBuild.GUI.Widgets is
         -- end if;
 
         -- Draw the characters
-        --@TODO Draw the selection highlight
+        --@TODO Draw the selection highlight - we may be able to add st.Selection_x1
+        -- and st.Selection_x2 to state to track where we draw the highlighted text,
+        -- since the cursor will move over those areas (except for Home and End, but
+        -- those would be easy to calculate.) and we can save the cursor's x value
+        -- as we go. Then we draw a rectangle for the selection before we render the text and
+        -- cursor. An alternative which may be simpler is just to render each character
+        -- individually if the field is active, and we can apply styles for selected
+        -- text, and plot the cursor as we go when we get to it's character position.
+        -- Otherwise, render everything before the selection, render the selection
+        -- with a style, then everything after the selection.
+        -- I'm Inclined to render individual characters in the string, applying
+        -- styles as we go.
         --@TODO Clip the number of characters by what we can actually display
         drawChars : declare
             First_Draw_Index    : Natural;
@@ -604,7 +615,7 @@ package body DAGBuild.GUI.Widgets is
             Total_Text_Width    : SDL.Positive_Dimension;
         begin
             if UBS.Length(Text) > 0 and not Cursor_Click_Update then
-                if st.Cursor_Start = 1 then
+                if st.Cursor_Pos = 1 then
                     -- cursor at front, draw line then text
                     if st.Kbd_Item = id and st.Kbd_Scope = Scope then
                         Draw_Line (r        => st.Renderer,
@@ -624,12 +635,12 @@ package body DAGBuild.GUI.Widgets is
                                Color    => st.Theme.Input_foreground);
 
                     --Total_Text_Width := w;
-                elsif st.Cursor_Start <= UBS.Length(Text) then
+                elsif st.Cursor_Pos <= UBS.Length(Text) then
                     -- Draw the characters up to the cursor position, use width of that
                     -- texture to identify where to draw the cursor, then draw the rest
                     -- of the characters.
                     Draw_Text (r        => st.Renderer,
-                               Text     => UBS.To_String(UBS.Unbounded_Slice(Text, 1, st.Cursor_Start - 1)),
+                               Text     => UBS.To_String(UBS.Unbounded_Slice(Text, 1, st.Cursor_Pos - 1)),
                                x        => x + Text_Draw_Offset,
                                y        => y + 8,
                                w        => w,
@@ -649,7 +660,7 @@ package body DAGBuild.GUI.Widgets is
                     end if;
 
                     Draw_Text (r => st.Renderer,
-                               Text => UBS.To_String(UBS.Unbounded_Slice(Text, st.Cursor_Start, UBS.Length(Text))),
+                               Text => UBS.To_String(UBS.Unbounded_Slice(Text, st.Cursor_Pos, UBS.Length(Text))),
                                x => x + Text_Draw_Offset + w,
                                y => y + 8,
                                w => w,
@@ -695,8 +706,8 @@ package body DAGBuild.GUI.Widgets is
 
                 if st.Mouse_x < x + Text_Draw_Offset then
                     -- clicked to the left of the text
-                    st.Cursor_Start := 1;
-                    st.Cursor_End := st.Cursor_Start;
+                    st.Cursor_Pos := 1;
+                    --st.Cursor_End := st.Cursor_Pos;
                 elsif st.Mouse_x < x + w then
                     -- clicked somewhere in the middle of the text.
                     -- interpolate cursor position within the rendered text
@@ -705,16 +716,16 @@ package body DAGBuild.GUI.Widgets is
                     determinePosition: declare
                         Relative_Mouse_Pos  : SDL.Positive_Coordinate := st.Mouse_x - x;
                         Pixels_Per_Char     : SDL.Positive_Coordinate := w / SDL.Positive_Coordinate(UBS.Length(Text));
-                        Approx_Click_Char   : Positive := Positive(Relative_Mouse_Pos / Pixels_Per_Char);
+                        Approx_Click_Char   : Positive := Positive(Relative_Mouse_Pos / Pixels_Per_Char + 1);
                     begin
-                        st.Cursor_Start := Approx_Click_Char;
-                        st.Cursor_End := st.Cursor_Start;
+                        st.Cursor_Pos := Approx_Click_Char;
+                        --st.Cursor_End := st.Cursor_Start;
                     end determinePosition;
 
                 else
                     -- clicked to the right of the text
-                    st.Cursor_Start := UBS.Length(Text) + 1;
-                    st.Cursor_End := st.Cursor_Start;
+                    st.Cursor_Pos := UBS.Length(Text) + 1;
+                    --st.Cursor_End := st.Cursor_Start;
                 end if;
             else
                 -- No text, just draw the cursor at position 1 if we're active
@@ -762,36 +773,36 @@ package body DAGBuild.GUI.Widgets is
                         return True;
 
                     when SDL.Events.Keyboards.Code_Left =>
-                        if st.Cursor_Start > 1 then
-                            st.Cursor_Start := st.Cursor_Start - 1;
-                            st.Cursor_End := st.Cursor_Start;
+                        if st.Cursor_Pos > 1 then
+                            st.Cursor_Pos := st.Cursor_Pos - 1;
+                            --st.Cursor_End := st.Cursor_Start;
                         end if;
                     
                     when SDL.Events.Keyboards.Code_Right =>
-                        if st.Cursor_Start <= UBS.Length(Text) then
-                            st.Cursor_Start := st.Cursor_Start + 1;
-                            st.Cursor_End := st.Cursor_Start;
+                        if st.Cursor_Pos <= UBS.Length(Text) then
+                            st.Cursor_Pos := st.Cursor_Pos + 1;
+                            --st.Cursor_End := st.Cursor_Start;
                         end if;
 
                     when SDL.Events.Keyboards.Code_Home =>
-                        st.Cursor_Start := 1;
-                        st.Cursor_End   := st.Cursor_Start;
+                        st.Cursor_Pos := 1;
+                        --st.Cursor_End   := st.Cursor_Start;
 
                     when SDL.Events.Keyboards.Code_End =>
-                        st.Cursor_Start := UBS.Length(Text) + 1;
-                        st.Cursor_End   := st.Cursor_Start;
+                        st.Cursor_Pos := UBS.Length(Text) + 1;
+                        --st.Cursor_End   := st.Cursor_Start;
 
                     when SDL.Events.Keyboards.Code_Backspace =>
-                        if st.Cursor_Start > 1 then
-                            UBS.Delete(Text, st.Cursor_Start - 1, st.Cursor_End - 1);
-                            st.Cursor_Start := st.Cursor_Start - 1;
-                            st.Cursor_End   := st.Cursor_End - 1;
+                        if st.Cursor_Pos > 1 then
+                            UBS.Delete(Text, st.Cursor_Pos - 1, st.Cursor_Pos - 1);
+                            st.Cursor_Pos := st.Cursor_Pos - 1;
+                            --st.Cursor_End := st.Cursor_End - 1;
                         end if;
                         --@TODO handle selection
                     
                     when SDL.Events.Keyboards.Code_Delete =>
-                        if st.Cursor_Start <= UBS.Length(Text) then
-                            UBS.Delete (Text, st.Cursor_Start, st.Cursor_End);
+                        if st.Cursor_Pos <= UBS.Length(Text) then
+                            UBS.Delete (Text, st.Cursor_Pos, st.Cursor_Pos);
                         end if;
                         --@TODO handle selection
 
@@ -808,7 +819,7 @@ package body DAGBuild.GUI.Widgets is
 
                     editText : declare
                         Can_Fit     : Integer;
-                        Select_Len  : Natural := st.Cursor_End - st.Cursor_Start;
+                        Select_Len  : Natural := st.Selection_End - st.Selection_Start;
                     begin
                         -- Ada.Text_IO.Put_Line("Max Length:         " & Max_Length'Image);
                         -- Ada.Text_IO.Put_Line("st.Kbd_Text Length: " & UBS.Length(st.Kbd_Text)'Image);
@@ -831,27 +842,27 @@ package body DAGBuild.GUI.Widgets is
                         --Ada.Text_IO.Put_Line("Can_Fit C:      " & Can_Fit'Image);
                         
                         if Can_Fit > 0 then
-                            if st.Cursor_Start = UBS.Length(Text) then
+                            if st.Cursor_Pos = UBS.Length(Text) then
                                 -- Cursor at end, append the new text
                                 UBS.Append(Text, UBS.Head(st.Kbd_Text, Can_Fit));
 
-                                st.Cursor_Start := UBS.Length(Text);
-                                st.Cursor_End   := st.Cursor_Start;
+                                st.Cursor_Pos := UBS.Length(Text);
+                                --st.Cursor_End   := st.Cursor_Start;
                             else
                                 -- Cursor elsewhere
-                                if st.Cursor_Start /= st.Cursor_End then
+                                if st.Selection_Start /= st.Selection_End then
                                     -- There's a selection
                                     UBS.Replace_Slice (Source   => Text, 
-                                                       Low      => st.Cursor_Start,
-                                                       High     => st.Cursor_End,
+                                                       Low      => st.Selection_Start,
+                                                       High     => st.Selection_End,
                                                        By       => UBS.To_String(UBS.Head(st.Kbd_Text, Can_Fit)));
                                 else
                                     UBS.Insert (Source      => Text,
-                                                Before      => st.Cursor_Start,
+                                                Before      => st.Cursor_Pos,
                                                 New_Item    => UBS.To_String(UBS.Head(st.Kbd_Text, Can_Fit)));
 
-                                    st.Cursor_Start := st.Cursor_Start + Can_Fit;
-                                    st.Cursor_End := st.Cursor_Start;
+                                    st.Cursor_Pos := st.Cursor_Pos + Can_Fit;
+                                    --st.Cursor_End := st.Cursor_Start;
                                 end if;
                             end if;
                         end if;

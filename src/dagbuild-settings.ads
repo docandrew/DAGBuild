@@ -389,7 +389,8 @@ package DAGBuild.Settings is
 		Terminal_ansiBrightWhite                    => Hex_Color(16#ffffff#)
     );
 
-    Font_Name       : String := "Muli-Medium.ttf";
+    Font_Name       : String := "Muli-Medium.ttf";    -- var-width
+    --Font_Name       : String := "FiraCode-Regular.ttf"; -- fixed-width
     Font_Size       : SDL.TTFs.Point_Sizes := 14;
 
 end DAGBuild.Settings;
