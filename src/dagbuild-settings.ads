@@ -212,7 +212,7 @@ package DAGBuild.Settings is
 		Focus_Border                                => Hex_Color(16#505867#),
 		Foreground                                  => Hex_Color(16#707a8c#),
 		Widget_Shadow                               => Hex_Color(16#141925#),
-		Selection_Background                        => Hex_Color(16#2a3546fd#),
+		Selection_Background                        => Hex_Color(16#2a3546#),
         TextBlockQuote_Background                   => Hex_Color(16#232834#),
 		TextLink_Foreground                         => Hex_Color(16#ffcc66#),
 		TextLink_ActiveForeground                   => Hex_Color(16#ffcc66#),

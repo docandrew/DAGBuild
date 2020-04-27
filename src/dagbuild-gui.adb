@@ -198,6 +198,8 @@ package body DAGBuild.GUI is
 
         --@TODO this assumes rendering takes no time. We need to adjust the
         -- delay here to get a constant frame rate.
+        --@TODO if no activity, go into a "sleep" mode, keep the display
+        -- cached, but don't redraw widgets.
         delay Delay_Period;
         st.ms_Ticks := st.ms_Ticks + Delay_Period;
     end Render;
