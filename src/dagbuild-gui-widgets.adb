@@ -713,6 +713,7 @@ package body DAGBuild.GUI.Widgets is
 
         HandleKeys : declare
             use SDL.Events.Keyboards;
+            use ASCII;
         begin    
             if st.Kbd_Item = id and st.Kbd_Scope = Scope then
                 --Ada.Text_IO.Put_Line("slider key: " & st.Kbd_Pressed'Image);
@@ -755,48 +756,101 @@ package body DAGBuild.GUI.Widgets is
                         if st.Cursor_Pos > 1 then
 
                             if (st.Kbd_Modifier and Modifier_Shift) /= 0 then
-                                st.Selection_End := st.Cursor_Pos;
-                                st.Cursor_Pos := st.Cursor_Pos - 1;
-                                st.Selection_Start := st.Cursor_Pos;
+                                -- grow or shrink selection
+                                if st.Selection_Start = st.Cursor_Pos then
+                                    st.Cursor_Pos       := st.Cursor_Pos - 1;
+                                    st.Selection_Start  := st.Cursor_Pos;
+                                else
+                                    st.Cursor_Pos       := st.Cursor_Pos - 1;
+                                    st.Selection_End    := st.Cursor_Pos;
+                                end if;
                             else
-                                st.Cursor_Pos := st.Cursor_Pos - 1;
-                                st.Selection_Start := st.Cursor_Pos;
-                                st.Selection_End := st.Selection_Start;
+                                -- no shift, just move cursor
+                                st.Cursor_Pos       := st.Cursor_Pos - 1;
+                                st.Selection_Start  := st.Cursor_Pos;
+                                st.Selection_End    := st.Selection_Start;
                             end if;
                         end if;
                     
                     when SDL.Events.Keyboards.Code_Right =>
                         if st.Cursor_Pos <= UBS.Length(Text) then
-                            
+                            -- if this is a ctrl+click, then we advance the
+                            -- cursor to the next word.
+                            if (st.Kbd_Modifier and Modifier_Control) /= 0 then
+
+                                Find_Word_End: declare
+                                    Low     : Positive := st.Cursor_Pos;
+                                    High    : Positive := UBS.Length (Text);
+                                    Char    : Character;
+                                begin
+                                    Find_Loop: for i in Low .. High loop
+                                        Char := UBS.Element (Text, i);
+                                        
+                                        exit Find_Loop when Char = ' ' or 
+                                                            Char = '.' or
+                                                            Char = '\' or
+                                                            Char = '_' or
+                                                            Char = '/' or
+                                                            Char = CR or
+                                                            Char = LF or
+                                                            Char = HT;
+
+                                        st.Cursor_Pos := i;
+                                        -- will update st.Selection_Start later
+                                        st.Selection_End := st.Cursor_Pos;
+                                        
+                                    end loop Find_Loop;
+                                end Find_Word_End;
+                            end if;
+
                             if (st.Kbd_Modifier and Modifier_Shift) /= 0 then
-                                st.Selection_Start := st.Cursor_Pos;
-                                st.Cursor_Pos := st.Cursor_Pos + 1;
-                                st.Selection_End := st.Cursor_Pos;
+                                -- grow or shrink selection
+                                if st.Selection_End = st.Cursor_Pos then
+                                    st.Cursor_Pos       := st.Cursor_Pos + 1;
+                                    st.Selection_End    := st.Cursor_Pos;
+                                else
+                                    st.Cursor_Pos       := st.Cursor_Pos + 1;
+                                    st.Selection_Start  := st.Cursor_Pos;
+                                end if;
                             else
-                                st.Cursor_Pos := st.Cursor_Pos + 1;
-                                st.Selection_Start := st.Cursor_Pos;
-                                st.Selection_End := st.Selection_Start;
+                                st.Cursor_Pos       := st.Cursor_Pos + 1;
+                                st.Selection_Start  := st.Cursor_Pos;
+                                st.Selection_End    := st.Selection_Start;
                             end if;
                         end if;
 
                     when SDL.Events.Keyboards.Code_Home =>
                         
                         if (st.Kbd_Modifier and Modifier_Shift) /= 0 then
-                            st.Selection_End := st.Cursor_Pos; 
-                            st.Cursor_Pos := 1;
-                            st.Selection_Start := st.Cursor_Pos;
+                            -- Expand or shrink selection
+                            if st.Cursor_Pos = st.Selection_End then
+                                st.Selection_End    := st.Selection_Start;
+                                st.Cursor_Pos       := 1;
+                                st.Selection_Start  := st.Cursor_Pos;
+                            else
+                                st.Selection_End    := st.Cursor_Pos;
+                                st.Cursor_Pos       := 1;
+                                st.Selection_Start  := st.Cursor_Pos;
+                            end if;
                         else
-                            st.Cursor_Pos := 1;
-                            st.Selection_Start := st.Cursor_Pos;
-                            st.Selection_End := st.Selection_Start;
+                            st.Cursor_Pos           := 1;
+                            st.Selection_Start      := st.Cursor_Pos;
+                            st.Selection_End        := st.Selection_Start;
                         end if;
 
                     when SDL.Events.Keyboards.Code_End =>
 
                         if (st.Kbd_Modifier and Modifier_Shift) /= 0 then
-                            st.Selection_Start := st.Cursor_Pos;
-                            st.Cursor_Pos := UBS.Length (Text) + 1;
-                            st.Selection_End := st.Cursor_Pos;
+                            -- Expand or 
+                            if st.Cursor_Pos = st.Selection_Start then
+                                st.Selection_Start  := st.Selection_End;
+                                st.Cursor_Pos       := UBS.Length (Text) + 1;
+                                st.Selection_End    := st.Cursor_Pos;
+                            else
+                                st.Selection_Start  := st.Cursor_Pos;
+                                st.Cursor_Pos       := UBS.Length (Text) + 1;
+                                st.Selection_End    := st.Cursor_Pos;
+                            end if;
                         else
                             st.Cursor_Pos := UBS.Length (Text) + 1;
                             st.Selection_Start := st.Cursor_Pos;
@@ -804,21 +858,37 @@ package body DAGBuild.GUI.Widgets is
                         end if;
 
                     when SDL.Events.Keyboards.Code_Backspace =>
-                        if st.Cursor_Pos > 1 then
-                            UBS.Delete (Text, st.Cursor_Pos - 1, st.Cursor_Pos - 1);
-                            st.Cursor_Pos := st.Cursor_Pos - 1;
-                            --st.Cursor_End := st.Cursor_End - 1;
-                        end if;
-                        --@TODO handle selection
-                    
-                    when SDL.Events.Keyboards.Code_Delete =>
-                        --@TODO figure this out
-                        if st.Cursor_Pos <= UBS.Length (Text) then
+                        if st.Selection_Start < st.Selection_End then
                             UBS.Delete (Text, st.Selection_Start, st.Selection_End - 1);
-                            st.Selection_Start := st.Cursor_Pos;
-                            st.Selection_End := st.Selection_Start;
+                            st.Cursor_Pos := st.Selection_Start;
+                            st.Selection_End := st.Cursor_Pos;
+                        else
+                            -- no selection, so just delete prev character if there
+                            -- is one, and move cursor left.
+                            if st.Cursor_Pos > 1 then
+                                UBS.Delete (Text, st.Cursor_Pos - 1, st.Cursor_Pos - 1);
+                                st.Cursor_Pos       := st.Cursor_Pos - 1;
+                                st.Selection_Start  := st.Cursor_Pos;
+                                st.Selection_End    := st.Selection_Start;
+                            end if;
                         end if;
-                        --@TODO handle selection
+       
+                    when SDL.Events.Keyboards.Code_Delete =>
+                        -- If there's a selection, nuke it and make cursor
+                        -- go to the start.
+                        if st.Selection_Start < st.Selection_End then
+                            UBS.Delete (Text, st.Selection_Start, st.Selection_End - 1);
+                            st.Cursor_Pos       := st.Selection_Start;
+                            st.Selection_End    := st.Cursor_Pos;
+                        else
+                            -- no selection, so just delete next character if there
+                            -- is one.
+                            if st.Cursor_Pos <= UBS.Length (Text) then
+                                UBS.Delete (Text, st.Cursor_Pos, st.Cursor_Pos);
+                                st.Selection_Start  := st.Cursor_Pos;
+                                st.Selection_End    := st.Selection_Start;
+                            end if;
+                        end if;
 
                     when others =>
                         --Ada.Text_IO.Put_Line("other: " & st.Kbd_Pressed'Image);
@@ -831,49 +901,56 @@ package body DAGBuild.GUI.Widgets is
                     editText : declare
                         Can_Fit     : Integer;
                         Select_Len  : Natural := st.Selection_End - st.Selection_Start;
+                        New_Text    : UBS.Unbounded_String;
                     begin
                         -- determine room to insert/append
                         if Max_Length = 0 then
                             Can_Fit := UBS.Length (st.Kbd_Text);
                         else
-                            -- if there's a selection that we're about to replace,
-                            -- then we can add the length of that selection to
-                            -- the space we have.
+                            -- If there's a selection that we're about to replace,
+                            --  then we can add the length of that selection to
+                            --  the space we have, since it will get wiped out
+                            --  prior to inserting the new text.
                             Can_Fit := Max_Length + Select_Len - UBS.Length (Text);
                             
                             if Can_Fit < 0 then
                                 Can_Fit := 0;
                             elsif Can_Fit > UBS.Length (st.Kbd_Text) then
-                                Can_Fit := UBS.Length (st.Kbd_Text);
+                                -- Figure out how many chars we can copy here.
+                                Can_Fit     := UBS.Length (st.Kbd_Text);
+                                New_Text    := UBS.Unbounded_Slice (Source    => st.Kbd_Text,
+                                                                    Low       => 1,
+                                                                    High      => Can_Fit);
+                            else
+                                New_Text    := st.Kbd_Text;
                             end if;
                         end if;
 
                         --Ada.Text_IO.Put_Line("Can_Fit C:      " & Can_Fit'Image);
                         
                         if Can_Fit > 0 then
-                            if st.Cursor_Pos = UBS.Length(Text) then
-                                -- Cursor at end, append the new text
-                                UBS.Append(Text, UBS.Head(st.Kbd_Text, Can_Fit));
-
-                                st.Cursor_Pos := UBS.Length(Text);
-                                --st.Cursor_End   := st.Cursor_Start;
-                            else
-                                -- Cursor elsewhere
-                                if st.Selection_Start /= st.Selection_End then
-                                    -- There's a selection
-                                    UBS.Replace_Slice (Source   => Text, 
-                                                       Low      => st.Selection_Start,
-                                                       High     => st.Selection_End,
-                                                       By       => UBS.To_String(UBS.Head(st.Kbd_Text, Can_Fit)));
-                                else
-                                    UBS.Insert (Source      => Text,
-                                                Before      => st.Cursor_Pos,
-                                                New_Item    => UBS.To_String(UBS.Head(st.Kbd_Text, Can_Fit)));
-
-                                    st.Cursor_Pos := st.Cursor_Pos + Can_Fit;
-                                    --st.Cursor_End := st.Cursor_Start;
-                                end if;
+                            -- If there's a selection, we need to erase it first.
+                            if st.Selection_Start < st.Selection_End then
+                                UBS.Delete (Text, st.Selection_Start, st.Selection_End - 1);
+                                st.Cursor_Pos       := st.Selection_Start;
+                                st.Selection_End    := st.Cursor_Pos;
                             end if;
+
+                            if st.Cursor_Pos = UBS.Length (Text) + 1 then
+                                UBS.Append (Source      => Text,
+                                            New_Item    => New_Text);
+                                st.Cursor_Pos       := st.Cursor_Pos + Can_Fit;
+                                st.Selection_Start  := st.Cursor_Pos;
+                                st.Selection_End    := st.Selection_Start;
+                            else
+                                UBS.Insert (Source      => Text,
+                                            Before      => st.Cursor_Pos,
+                                            New_Item    => UBS.To_String (New_Text));
+                                st.Cursor_Pos       := st.Cursor_Pos + Can_Fit;
+                                st.Selection_Start  := st.Cursor_Pos;
+                                st.Selection_End    := st.Selection_Start; 
+                            end if;
+
                         end if;
 
                         st.Kbd_Text := UBS.Null_Unbounded_String;

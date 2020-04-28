@@ -93,7 +93,8 @@ package DAGBuild.GUI.State is
         Done            : Boolean := False;
 
         ms_Ticks        : Duration;
-    end record;
+    end record
+        with Dynamic_Predicate => (Cursor_Pos = Selection_Start or Cursor_Pos = Selection_End);
 
     -- Extra keyboard help
     NO_KEY : constant SDL.Events.Keyboards.Key_Codes := SDL.Events.Keyboards.Key_Codes(0);
