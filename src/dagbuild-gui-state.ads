@@ -31,6 +31,10 @@ package DAGBuild.GUI.State is
     -- out of scope.
     type Last_ID_List is array (1..Scope'Last) of ID;
 
+    -- If moving the cursor left "grows" the selection, i.e. the cursor is to
+    -- the left, vs moving the cursor right "grows" the selection
+    type Selection_Direction is (LEFT, RIGHT);
+
     -- Low-level state of the GUI for rendering and input handling
     -- @field Renderer is the renderer for the app window
     -- @field Mouse_x is the x-position of the mouse
@@ -84,6 +88,7 @@ package DAGBuild.GUI.State is
         Cursor_Pos      : Positive := 1;
         Selection_Start : Positive := 1;
         Selection_End   : Positive := 1;
+        --Selection_Dir   : Select_Direction;
 
         Last_Widget     : ID;
         Last_Scope      : Scope;
