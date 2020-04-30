@@ -500,6 +500,24 @@ package body DAGBuild.GUI.Widgets is
                    BG_Color => st.Theme.Input_Background);
     end Label;
 
+    -- Determine which direction a selection is based on its start, end, and the
+    --  current cursor position.
+    function Get_Selection_Direction (st : DAGBuild.GUI.State.UIState) 
+        return DAGBuild.GUI.State.Selection_Direction
+    is
+        use DAGBuild.GUI.State;
+    begin
+        return Dir : DAGBuild.GUI.State.Selection_Direction do
+            if st.Selection_Start = st.Selection_End then
+                Dir := NONE;
+            elsif st.Cursor_Pos = st.Selection_Start then
+                Dir := LEFT;
+            else
+                Dir := RIGHT;
+            end if;
+        end return;
+    end Get_Selection_Direction;
+
     -- Return True if the user hit "enter" in this field
     function Text_Field_Navigate (st      : in out DAGBuild.GUI.State.UIState;
                                   Text    : in out Ada.Strings.Unbounded.Unbounded_String)
@@ -511,7 +529,7 @@ package body DAGBuild.GUI.Widgets is
         use DAGBuild.GUI.State;
         use SDL.Events.Keyboards;
         
-        Selection_Dir : DAGBuild.GUI.State.Selection_Direction;
+        Selection_Dir : Selection_Direction := Get_Selection_Direction(st);
 
         -- Used for ctrl+arrow to skip a word
         procedure Skip_Word_Right (st   : in out DAGBuild.GUI.State.UIState;
@@ -568,15 +586,6 @@ package body DAGBuild.GUI.Widgets is
         end Skip_Word_Left;
 
     begin
-        -- Determine selection direction, if any
-        if st.Selection_Start = st.Selection_End then
-            Selection_Dir := NONE;
-        elsif st.Cursor_Pos = st.Selection_Start then
-            Selection_Dir := LEFT;
-        else
-            Selection_Dir := RIGHT;
-        end if;
-
         case st.Kbd_Pressed is
             when SDL.Events.Keyboards.Code_Tab =>
                 -- Lose focus, next widget will snag it.
@@ -822,6 +831,7 @@ package body DAGBuild.GUI.Widgets is
         Text_Draw_Offset : constant SDL.Positive_Dimension := 4;
         
         Cursor_Click_Update : Boolean := False;
+        Cursor_Drag_Update : Boolean := False;
 
         Hit_Enter : Boolean;
 
@@ -866,8 +876,6 @@ package body DAGBuild.GUI.Widgets is
             
             --We now own the cursor and selection within the UIState, so can
             -- set it to the end of the field.
-            --Any changes made while we have the focus will be
-            -- persisted.
             st.Cursor_Pos       := UBS.Length(Text) + 1;
             st.Selection_Start  := st.Cursor_Pos;
             st.Selection_End    := st.Selection_Start;
@@ -899,44 +907,12 @@ package body DAGBuild.GUI.Widgets is
             st.Kbd_Heartbeat := True;
         end if;
 
-        -- If we are active, then drag the cursor
-        -- if st.Active_Item = id and st.Active_Scope = Scope then
-        --     Update: declare
-        --         Mouse_Pos : Integer := Integer(st.Mouse_x) - 
-        --                                 Integer(y + 8);
-        --         New_Val : Integer;
-        --     begin
+        -- If we are still active, then update cursor based on mouse position
+        if st.Active_Item = id and st.Active_Scope = Scope and st.Mouse_Down
+            and not Cursor_Click_Update then
+            Cursor_Drag_Update := True;
+        end if;
 
-        --         if Mouse_Pos < 0 then
-        --             Mouse_Pos := 0;
-        --         end if;
-
-        --         if Mouse_Pos > 255 then
-        --             Mouse_Pos := 255;
-        --         end if;
-
-        --         New_Val := (Mouse_Pos * Max) / 255;
-
-        --         if Val /= New_Val then
-        --             Val := New_Val;
-        --             return True;
-        --         end if;
-        --     end Update;
-        -- end if;
-
-        -- Draw the characters
-        --@TODO Draw the selection highlight - we may be able to add st.Selection_x1
-        -- and st.Selection_x2 to state to track where we draw the highlighted text,
-        -- since the cursor will move over those areas (except for Home and End, but
-        -- those would be easy to calculate.) and we can save the cursor's x value
-        -- as we go. Then we draw a rectangle for the selection before we render the text and
-        -- cursor. An alternative which may be simpler is just to render each character
-        -- individually if the field is active, and we can apply styles for selected
-        -- text, and plot the cursor as we go when we get to it's character position.
-        -- Otherwise, render everything before the selection, render the selection
-        -- with a style, then everything after the selection.
-        -- I'm inclined to render individual characters in the string, applying
-        -- styles as we go. May be slow.
         --@TODO Clip the number of characters by what we can actually display.
         drawChars : declare
             -- First_Draw_Index    : Natural;
@@ -945,6 +921,7 @@ package body DAGBuild.GUI.Widgets is
             Cursor_x        : SDL.Positive_Dimension := x + Text_Draw_Offset;
             Text_BG_Color   : SDL.Video.Palettes.Colour;
             Text_FG_Color   : SDL.Video.Palettes.Colour;
+            Selection_Dir   : Selection_Direction := Get_Selection_Direction(st);
         begin
             if not (st.Kbd_Item = id and st.Kbd_Scope = scope) then
                 -- if we aren't active, then just render the text in one fell swoop
@@ -985,10 +962,46 @@ package body DAGBuild.GUI.Widgets is
                         -- whose width takes us past where we clicked, then update
                         -- the cursor position to that character.
                         if Cursor_Click_Update and Text_x >= st.Mouse_x then
+                            --Ada.Text_IO.Put_Line ("click" & i'Image);
                             st.Cursor_Pos := i;
                             st.Selection_Start := st.Cursor_Pos;
                             st.Selection_End := st.Selection_Start;
                             Cursor_Click_Update := False;
+                        end if;
+
+                        if Cursor_Drag_Update and Text_x >= st.Mouse_x then
+                            --Ada.Text_IO.Put_Line ("drag" & i'Image);
+                            -- if dragging the mouse, set cursor and adjust the
+                            -- selection based on direction.
+                            if i > st.Cursor_Pos then
+                                --Ada.Text_IO.Put_Line ("left");
+                                -- moved cursor left
+                                if Selection_Dir = LEFT then
+                                    -- grow selection left
+                                    st.Cursor_Pos := i;
+                                    st.Selection_Start := st.Cursor_Pos;
+                                else
+                                    -- shrink selection from right
+                                    st.Cursor_Pos := i;
+                                    st.Selection_End := st.Cursor_Pos;
+                                end if;
+                            elsif i < st.Cursor_Pos then
+                                --Ada.Text_IO.Put_Line ("right");
+                                -- moved cursor right
+                                if Selection_Dir = RIGHT then
+                                    -- grow selection right
+                                    st.Cursor_Pos := i;
+                                    st.Selection_End := st.Cursor_Pos;
+                                else
+                                    -- shrink selection from left
+                                    st.Cursor_Pos := i;
+                                    st.Selection_Start := st.Cursor_Pos;
+                                end if;
+                            else
+                                -- moved cursor none
+                                null;
+                            end if;
+                            Cursor_Drag_Update := False;
                         end if;
 
                         -- Update the cursor x value when appropriate
@@ -999,13 +1012,19 @@ package body DAGBuild.GUI.Widgets is
                         Text_x := Text_x + w;
                     end loop;
 
-                    -- If we haven't updated the Cursor "click" by this point, it
+                    -- If we haven't updated the Cursor by this point, it
                     --  was to the right of the text we just rendered.
                     if Cursor_Click_Update then
                         st.Cursor_Pos := UBS.Length(Text) + 1;
                         st.Selection_Start := st.Cursor_Pos;
                         st.Selection_End := st.Selection_Start;
                         Cursor_Click_Update := False;
+                    end if;
+
+                    if Cursor_Drag_Update then
+                        st.Cursor_Pos := UBS.Length(Text) + 1;
+                        st.Selection_End := st.Cursor_Pos;
+                        Cursor_Drag_Update := False;
                     end if;
 
                     -- If the cursor is at the end, we won't see it's "character"
