@@ -510,8 +510,8 @@ package body DAGBuild.GUI.Widgets is
         use ASCII;
         use DAGBuild.GUI.State;
         use SDL.Events.Keyboards;
-
-        Selection_Dir : Selection_Direction := (if st.Cursor_Pos = st.Selection_Start then LEFT else RIGHT);
+        
+        Selection_Dir : DAGBuild.GUI.State.Selection_Direction;
 
         -- Used for ctrl+arrow to skip a word
         procedure Skip_Word_Right (st   : in out DAGBuild.GUI.State.UIState;
@@ -568,6 +568,15 @@ package body DAGBuild.GUI.Widgets is
         end Skip_Word_Left;
 
     begin
+        -- Determine selection direction, if any
+        if st.Selection_Start = st.Selection_End then
+            Selection_Dir := NONE;
+        elsif st.Cursor_Pos = st.Selection_Start then
+            Selection_Dir := LEFT;
+        else
+            Selection_Dir := RIGHT;
+        end if;
+
         case st.Kbd_Pressed is
             when SDL.Events.Keyboards.Code_Tab =>
                 -- Lose focus, next widget will snag it.
@@ -608,7 +617,7 @@ package body DAGBuild.GUI.Widgets is
                     end if;
 
                     if (st.Kbd_Modifier and Modifier_Shift) /= 0 then
-                        if Selection_Dir = LEFT then
+                        if Selection_Dir = LEFT or Selection_Dir = NONE then
                             -- grow selection left
                             st.Cursor_Pos       := st.Cursor_Pos - 1;
                             st.Selection_Start  := st.Cursor_Pos;
@@ -634,7 +643,7 @@ package body DAGBuild.GUI.Widgets is
                     end if;
                     
                     if (st.Kbd_Modifier and Modifier_Shift) /= 0 then
-                        if Selection_Dir = RIGHT then
+                        if Selection_Dir = RIGHT or Selection_Dir = NONE then
                             -- grow selection right
                             st.Cursor_Pos       := st.Cursor_Pos + 1;
                             st.Selection_End    := st.Cursor_Pos;

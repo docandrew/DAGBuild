@@ -33,7 +33,7 @@ package DAGBuild.GUI.State is
 
     -- If moving the cursor left "grows" the selection, i.e. the cursor is to
     -- the left, vs moving the cursor right "grows" the selection
-    type Selection_Direction is (LEFT, RIGHT);
+    type Selection_Direction is (LEFT, NONE, RIGHT);
 
     -- Low-level state of the GUI for rendering and input handling
     -- @field Renderer is the renderer for the app window
