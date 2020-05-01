@@ -6,7 +6,6 @@ with Interfaces.C; use Interfaces.C;
 with SDL;
 with SDL.Events;
 with SDL.Events.Keyboards;
-with SDL.Inputs.Keyboards;
 with SDL.Inputs.Mice.Cursors;
 with SDL.Video.Palettes;
 with SDL.Video.Rectangles;
@@ -500,6 +499,15 @@ package body DAGBuild.GUI.Widgets is
                    BG_Color => st.Theme.Input_Background);
     end Label;
 
+    -- For ctrl+click and double-click whole-word expansion
+    function Is_Word_End (Char : Character) return Boolean
+    is
+        use ASCII;
+    begin
+        return  Char = ' ' or Char = '.' or Char = '\' or Char = '_' or 
+                Char = '/' or Char = CR or Char = LF or Char = HT;
+    end Is_Word_End;
+
     -- Determine which direction a selection is based on its start, end, and the
     --  current cursor position.
     function Get_Selection_Direction (st : DAGBuild.GUI.State.UIState) 
@@ -525,11 +533,10 @@ package body DAGBuild.GUI.Widgets is
     is
         package UBS renames Ada.Strings.Unbounded;
         
-        use ASCII;
         use DAGBuild.GUI.State;
         use SDL.Events.Keyboards;
         
-        Selection_Dir : Selection_Direction := Get_Selection_Direction(st);
+        Selection_Dir : constant Selection_Direction := Get_Selection_Direction (st);
 
         -- Used for ctrl+arrow to skip a word
         procedure Skip_Word_Right (st   : in out DAGBuild.GUI.State.UIState;
@@ -541,20 +548,8 @@ package body DAGBuild.GUI.Widgets is
         begin
             Find_Loop: for i in Low .. High loop
                 Char := UBS.Element (Text, i);
-                
                 st.Cursor_Pos := i;
-                -- must update st.Selection_Start later
-                --st.Selection_End := st.Cursor_Pos;
-
-                exit Find_Loop when Char = ' ' or 
-                                    Char = '.' or
-                                    Char = '\' or
-                                    Char = '_' or
-                                    Char = '/' or
-                                    Char = CR or
-                                    Char = LF or
-                                    Char = HT;
-
+                exit Find_Loop when Is_Word_End (Char);
             end loop Find_Loop;
 
             --st.Cursor_Pos := st.Cursor_Pos + 1;
@@ -568,20 +563,9 @@ package body DAGBuild.GUI.Widgets is
             Char    : Character;
         begin
             Find_Loop: for i in reverse Low .. High loop
-
                 Char := UBS.Element (Text, i);
-                            
-                exit Find_Loop when Char = ' ' or 
-                                    Char = '.' or
-                                    Char = '\' or
-                                    Char = '_' or
-                                    Char = '/' or
-                                    Char = CR or
-                                    Char = LF or
-                                    Char = HT;
-
+                exit Find_Loop when Is_Word_End (Char);
                 st.Cursor_Pos := i;
-                --st.Selection_Start := st.Cursor_Pos;
             end loop Find_Loop;
         end Skip_Word_Left;
 
@@ -754,7 +738,7 @@ package body DAGBuild.GUI.Widgets is
         package UBS renames Ada.Strings.Unbounded;
 
         Can_Fit     : Integer;
-        Select_Len  : Natural := st.Selection_End - st.Selection_Start;
+        Select_Len  : constant Natural := st.Selection_End - st.Selection_Start;
         New_Text    : UBS.Unbounded_String;
     begin
         -- determine room to insert/append
@@ -917,7 +901,6 @@ package body DAGBuild.GUI.Widgets is
         Draw_Chars : declare
             -- First_Draw_Index    : Natural;
             -- End_Draw_Index      : Natural;
-            use Ada.Real_Time;
 
             Text_x          : SDL.Positive_Dimension := x + Text_Draw_Offset;
             Cursor_x        : SDL.Positive_Dimension := x + Text_Draw_Offset;
@@ -1033,7 +1016,7 @@ package body DAGBuild.GUI.Widgets is
 
                     -- If the cursor is at the end, we won't see it's "character"
                     --  during the above loop. Set it here.
-                    if st.Cursor_Pos = UBS.Length(Text) + 1 then
+                    if st.Cursor_Pos = UBS.Length (Text) + 1 then
                         Cursor_x := Text_x;
                     end if;
                 end if;
@@ -1047,6 +1030,24 @@ package body DAGBuild.GUI.Widgets is
                                y2       => y + Field_Height - 2,
                                Color    => st.Theme.EditorCursor_foreground);
                     
+                end if;
+
+                -- Expand selection if double clicked.
+                if st.Double_Click and UBS.Length (Text) > 0 then
+                    Select_Word: declare
+                    begin
+                        Expand_Start: for i in reverse 1 .. st.Cursor_Pos loop
+                            exit Expand_Start when Is_Word_End (UBS.Element (Text, i));
+                            st.Selection_Start := i;
+                        end loop Expand_Start;
+
+                        Expand_End: for i in st.Cursor_Pos .. UBS.Length (Text) loop
+                            exit Expand_End when Is_Word_End (UBS.Element (Text, i));
+                            st.Selection_End := i;
+                        end loop Expand_End;
+
+                        st.Cursor_Pos := st.Selection_End;
+                    end Select_Word;
                 end if;
             end if; -- end "if active"
         end Draw_Chars;
