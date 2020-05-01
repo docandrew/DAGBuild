@@ -1,11 +1,12 @@
+with Ada.Real_Time;
+
 with SDL.Video.Windows;
 
 package DAGBuild.GUI is
 
-    -- For 60 fps
-    Frame_Rate      : constant := 60;
-    Milliseconds    : constant Duration := 0.001;
-    Delay_Period    : constant Duration := (1 / Frame_Rate) * Milliseconds;
+    --@TODO consider making this a setting
+    Frame_Rate      : constant := 60;   -- fps
+    Delay_Period    : constant Integer := 1000 / Frame_Rate;
 
     procedure Event_Loop(Window : in out SDL.Video.Windows.Window);
 

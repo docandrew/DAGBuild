@@ -1,9 +1,9 @@
-with Interfaces.C; use Interfaces.C;
-
+with Ada.Real_Time;
 with Ada.Text_IO;
 
-with SDL;
+with Interfaces.C; use Interfaces.C;
 
+with SDL;
 with SDL.Events;
 with SDL.Events.Keyboards;
 with SDL.Inputs.Keyboards;
@@ -914,9 +914,11 @@ package body DAGBuild.GUI.Widgets is
         end if;
 
         --@TODO Clip the number of characters by what we can actually display.
-        drawChars : declare
+        Draw_Chars : declare
             -- First_Draw_Index    : Natural;
             -- End_Draw_Index      : Natural;
+            use Ada.Real_Time;
+
             Text_x          : SDL.Positive_Dimension := x + Text_Draw_Offset;
             Cursor_x        : SDL.Positive_Dimension := x + Text_Draw_Offset;
             Text_BG_Color   : SDL.Video.Palettes.Colour;
@@ -960,7 +962,9 @@ package body DAGBuild.GUI.Widgets is
                     
                         -- if we just clicked here, and we just rendered a character
                         -- whose width takes us past where we clicked, then update
-                        -- the cursor position to that character.
+                        -- the cursor position to that character. We need to do
+                        -- this here, because otherwise we don't know the position
+                        -- each character is drawn at.
                         if Cursor_Click_Update and Text_x >= st.Mouse_x then
                             --Ada.Text_IO.Put_Line ("click" & i'Image);
                             st.Cursor_Pos := i;
@@ -1034,15 +1038,18 @@ package body DAGBuild.GUI.Widgets is
                     end if;
                 end if;
 
-                -- Draw the cursor at appropriate position
-                Draw_Line (r        => st.Renderer,
-                           x1       => Cursor_x,
-                           y1       => y + 2,
-                           x2       => Cursor_x,
-                           y2       => y + Field_Height - 2,
-                           Color    => st.Theme.EditorCursor_foreground);
+                -- Draw the cursor at appropriate position when not blinked
+                if st.Blink_On then
+                    Draw_Line (r        => st.Renderer,
+                               x1       => Cursor_x,
+                               y1       => y + 2,
+                               x2       => Cursor_x,
+                               y2       => y + Field_Height - 2,
+                               Color    => st.Theme.EditorCursor_foreground);
+                    
+                end if;
             end if; -- end "if active"
-        end drawChars;
+        end Draw_Chars;
 
 
         if st.Kbd_Item = id and st.Kbd_Scope = Scope then

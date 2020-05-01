@@ -1,3 +1,4 @@
+with Ada.Real_Time;
 
 with SDL;
 with SDL.TTFs;
@@ -392,5 +393,14 @@ package DAGBuild.Settings is
     Font_Name       : String := "Muli-Medium.ttf";    -- var-width
     --Font_Name       : String := "FiraCode-Regular.ttf"; -- fixed-width
     Font_Size       : SDL.TTFs.Point_Sizes := 14;
+
+    -- Accessibility
+
+    -- Time between clicks to register as a double-click
+    --Type Duty_Cycle is new Integer range 1 .. 100;
+
+    Double_Click_Threshold  : Ada.Real_Time.Time_Span := Ada.Real_Time.Milliseconds(500);
+    Cursor_Blink_Rate       : Ada.Real_Time.Time_Span := Ada.Real_Time.Milliseconds(400);
+    --Cursor_Duty_Cycle       : Duty_Cycle := 50;
 
 end DAGBuild.Settings;

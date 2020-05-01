@@ -1,4 +1,5 @@
 with Ada.Containers.Vectors;
+with Ada.Real_Time;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with SDL.Events;
@@ -40,6 +41,8 @@ package DAGBuild.GUI.State is
     -- @field Mouse_x is the x-position of the mouse
     -- @field Mouse_y is the y-position of the mouse
     -- @field Mouse_Down is True if the mouse button is being held down
+    -- @field Last_Click is the time the last click occurred, for measuring
+    --  double clicks
     -- @field Hot_Item is the ID of the widget we're hovering over
     -- @field Hot_Scope is the Scope of the widget we're hovering over
     -- @field Active_Item is the ID of the widget we've interacted with
@@ -53,20 +56,26 @@ package DAGBuild.GUI.State is
     -- @field Kbd_Heartbeat lets us know if the previously focused widget was
     --  drawn.
     -- @field Kbd_Text is text entered from the keyboard.
-    -- @field Cursor_Start is the cursor position within the focused text field.
-    -- @field Cursor_End is the end position of selected text within the
-    --  focused text field. If Cursor_Start = Cursor_End, then we just have a
-    --  single cursor, not a selection to overwrite.
+    -- @field Cursor_Pos is the cursor position within the focused text field.
+    -- @field Selection_Start is the start position of selected text within the
+    --  focused text field.
+    -- @field Selection_End is the end position of selected text within the 
+    --  focused text field.
+    -- @field Last_Blink is the time at which the cursor last switched from
+    --  blinking to non-blinking.
+    -- @field Blink_On is True if the cursor is drawn, False otherwise.
     -- @field Last_Widget is the ID of the last widget handled
     -- @field Last_Scope is the scope of the last widget handled
     -- @field Done is set to True if we are exiting the program.
-    -- @field Ticks is used for blinking cursors, it measures 
+
     type UIState is
     record
         Renderer        : SDL.Video.Renderers.Renderer;
         Mouse_x         : SDL.Natural_Coordinate;
         Mouse_y         : SDL.Natural_Coordinate;
         Mouse_Down      : Boolean := False;
+        Double_Click    : Boolean := False;
+        Last_Click      : Ada.Real_Time.Time;
 
         Hot_Item        : ID;
         Hot_Scope       : Scope;
@@ -89,19 +98,17 @@ package DAGBuild.GUI.State is
         Selection_Start : Positive := 1;
         Selection_End   : Positive := 1;
         --Selection_Dir   : Select_Direction;
+        Last_Blink      : Ada.Real_Time.Time;
+        Blink_On        : Boolean := True;
 
         Last_Widget     : ID;
         Last_Scope      : Scope;
 
         Theme           : DAGBuild.Settings.Color_Scheme := DAGBuild.Settings.Default_Dark;
-
         Done            : Boolean := False;
-
-        ms_Ticks        : Duration;
     end record
         with Dynamic_Predicate => (Cursor_Pos = Selection_Start or Cursor_Pos = Selection_End);
 
-    -- Extra keyboard help
     NO_KEY : constant SDL.Events.Keyboards.Key_Codes := SDL.Events.Keyboards.Key_Codes(0);
 
     -- Enter a new Widget scope

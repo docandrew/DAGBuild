@@ -1,5 +1,7 @@
 
 with Interfaces.C;
+
+with Ada.Real_Time;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
@@ -40,9 +42,16 @@ package body DAGBuild.GUI is
     -- Finish a round
     procedure IMGUI_Finish (st : in out DAGBuild.GUI.State.UIState)
     is
-        use ASCII;
+        use Ada.Real_Time;
         use DAGBuild.GUI.State;
+        Now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
     begin
+        -- Handle timing
+        if Now > st.Last_Blink + DAGBuild.Settings.Cursor_Blink_Rate then
+            st.Blink_On := not (st.Blink_On);
+            st.Last_Blink := Now;
+        end if;
+
         -- If mouse isn't down, clear the active item.
         -- If mouse is clicked with no widget active, mark no active item (-1) so we
         -- don't "click" on something if we release the button on top of another
@@ -56,6 +65,8 @@ package body DAGBuild.GUI is
                 st.Active_Item := INVALID_ITEM;
             end if;
         end if;
+
+        st.Double_Click := False;
 
         -- If we finished a round and the heartbeat wasn't updated because a
         -- widget wasn't drawn, then remove the focus. If we don't do this, the
@@ -105,14 +116,17 @@ package body DAGBuild.GUI is
     Blue        : SDL.Video.Palettes.Colour_Component := 0;
     Clear_Color : SDL.Video.Palettes.Colour := DAGBuild.Settings.Default_Dark.Editor_background;
     My_Str      : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String("Input here");
-    My_Str2     : Ada.Strings.Unbounded.Unbounded_String;
+    My_Str2     : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String("Or here");
+    Click       : Boolean := False;
 
     -- Render screen elements
     procedure Render(st : in out DAGBuild.GUI.State.UIState)
     is
         package Widgets renames DAGBuild.GUI.Widgets;
+        use Ada.Real_Time;   -- "+" operator
 
-        Click : Boolean := False;
+        -- For buttery-smooth frame rate
+        Next_Period : Ada.Real_Time.Time := Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Delay_Period);
     begin
         Clear_Window(st.Renderer, Clear_Color);
 
@@ -189,27 +203,24 @@ package body DAGBuild.GUI is
         Widgets.Label(st, "Hello DAGBuild!", 50, 300);
 
         Click := Widgets.Text_Field(st, My_Str, 50, 350);
-
         Click := Widgets.Text_Field(st, My_Str2, 50, 400);
         
         IMGUI_Finish(st);
 
         st.Renderer.Present;
 
-        --@TODO this assumes rendering takes no time. We need to adjust the
-        -- delay here to get a constant frame rate.
         --@TODO if no activity, go into a "sleep" mode, keep the display
         -- cached, but don't redraw widgets.
-        delay Delay_Period;
-        st.ms_Ticks := st.ms_Ticks + Delay_Period;
+        delay until Next_Period;
+        --st.ms_Ticks := st.ms_Ticks + Delay_Period;
     end Render;
 
     procedure Handle_Inputs(st : in out DAGBuild.GUI.State.UIState)
     is
+        use Ada.Real_Time;  -- "+" operator on Clock
         use type SDL.Events.Mice.Buttons;
-        use ASCII;
         
-        Event       : SDL.Events.Events.Events;
+        Event : SDL.Events.Events.Events;
     begin
         while SDL.Events.Events.Poll(Event) loop
 
@@ -221,12 +232,24 @@ package body DAGBuild.GUI is
                 
                 when SDL.Events.Mice.Button_Down =>
                     if Event.Mouse_Button.Button = SDL.Events.Mice.Left then
+                        -- two mouse-down events within the double-click threshold
+                        if Ada.Real_Time.Clock > st.Last_Click + DAGBuild.Settings.Double_Click_Threshold then
+                            st.Double_Click := True;
+                        end if;
+
                         st.Mouse_Down := True;
+                        st.Last_Click := Ada.Real_Time.Clock;
                     end if;
 
                 when SDL.Events.Mice.Button_Up =>
                     if Event.Mouse_Button.Button = SDL.Events.Mice.Left then
                         st.Mouse_Down := False;
+                        --st.Double_Click := False;
+
+                        -- Reset Double-Click if one just happened
+                        -- if st.Double_Click then
+                        --     st.Double_Click := False;
+                        -- end if;
                     end if;
 
                 when SDL.Events.Quit =>
