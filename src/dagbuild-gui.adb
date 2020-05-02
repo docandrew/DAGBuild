@@ -175,6 +175,11 @@ package body DAGBuild.GUI is
                          150,
                          "Three");
 
+        Click := Button (st,
+                         50,
+                         200,
+                         "Hello");
+
         if Click then
             Clear_Color := st.Theme.InputValidation_warningBackground;
         end if;
