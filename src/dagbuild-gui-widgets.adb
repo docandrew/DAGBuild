@@ -1030,14 +1030,14 @@ package body DAGBuild.GUI.Widgets is
                 if st.Double_Click and UBS.Length (Text) > 0 then
                     Select_Word: declare
                     begin
-                        Ada.Text_IO.Put_Line("double click");
+                        --Ada.Text_IO.Put_Line("double click");
                         -- st.Selection_Start := 1;
                         -- st.Selection_End := UBS.Length (Text);
                         if st.Cursor_Pos < UBS.Length (Text) then
                             Expand_Start: for i in reverse 1 .. st.Cursor_Pos loop
                                 exit Expand_Start when Is_Word_End (UBS.Element (Text, i));
                                 st.Selection_Start := i;
-                                Ada.Text_IO.Put_Line("Expand start: " & i'Image);
+                                --Ada.Text_IO.Put_Line("Expand start: " & i'Image);
                             end loop Expand_Start;
                         end if;
 
@@ -1045,11 +1045,11 @@ package body DAGBuild.GUI.Widgets is
                             Expand_End: for i in st.Cursor_Pos .. UBS.Length (Text) loop
                                 exit Expand_End when Is_Word_End (UBS.Element (Text, i));
                                 st.Selection_End := i + 1;
-                                Ada.Text_IO.Put_Line(" expand end: " & i'Image);
+                                --Ada.Text_IO.Put_Line(" expand end: " & i'Image);
                             end loop Expand_End;
                         end if;
 
-                        Ada.Text_IO.Put_Line(" setting cursor: " & st.Selection_End'Image);
+                        --Ada.Text_IO.Put_Line(" setting cursor: " & st.Selection_End'Image);
                         st.Cursor_Pos := st.Selection_End;
                         st.Word_Select := True;
                     end Select_Word;
