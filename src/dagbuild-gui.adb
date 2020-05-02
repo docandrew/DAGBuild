@@ -1,7 +1,7 @@
 
 with Interfaces.C;
 
-with Ada.Real_Time;
+--with Ada.Real_Time;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
@@ -15,13 +15,13 @@ with SDL.TTFs.Makers;
 with SDL.Video.Palettes;
 with SDL.Video.Renderers;
 with SDL.Video.Renderers.Makers;
---with SDL.Video.Surfaces;
---with SDL.Video.Textures;
---with SDL.Video.Textures.Makers;
 
---with DAGBuild.GUI.Emoji;
 with DAGBuild.GUI.State;
 with DAGBuild.GUI.Widgets;
+with DAGBuild.GUI.Widgets.Button; use DAGBuild.GUI.Widgets.Button;
+with DAGBuild.GUI.Widgets.Label; use DAGBuild.GUI.Widgets.Label;
+with DAGBuild.GUI.Widgets.Slider; use DAGBuild.GUI.Widgets.Slider;
+with DAGBuild.GUI.Widgets.Text_Field; use DAGBuild.GUI.Widgets.Text_Field;
 with DAGBuild.Settings;
 
 pragma Wide_Character_Encoding(UTF8);
@@ -44,7 +44,7 @@ package body DAGBuild.GUI is
     is
         use Ada.Real_Time;
         use DAGBuild.GUI.State;
-        Now : Ada.Real_Time.Time := Ada.Real_Time.Clock;
+        Now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
     begin
         -- Handle timing
         if Now > st.Last_Blink + DAGBuild.Settings.Cursor_Blink_Rate then
@@ -126,7 +126,7 @@ package body DAGBuild.GUI is
         use Ada.Real_Time;   -- "+" operator
 
         -- For buttery-smooth frame rate
-        Next_Period : Ada.Real_Time.Time := Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Delay_Period);
+        Next_Period : constant Ada.Real_Time.Time := Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Delay_Period);
     begin
         Clear_Window(st.Renderer, Clear_Color);
 
@@ -135,10 +135,10 @@ package body DAGBuild.GUI is
         --Window_Surface.Blit(Source => Text_Surface);
         --Window.Update_Surface;
 
-        Click := Widgets.Button (st,
-                                 50,
-                                 50,
-                                 "One");
+        Click := Button (st,
+                         50,
+                         50,
+                         "One");
 
         if Click then
             Clear_Color := (255, 0, 0, 255);
@@ -147,10 +147,10 @@ package body DAGBuild.GUI is
 
         if Show_Button then
             DAGBuild.GUI.State.Enter_Scope(st);
-                Click := DAGBuild.GUI.Widgets.Button(st,
-                                                     250,
-                                                     250,
-                                                     "???");
+                Click := Button(st,
+                                250,
+                                250,
+                                "Hide Me");
 
                 if Click then
                     Clear_Color := st.Theme.InputValidation_errorBackground;
@@ -161,49 +161,49 @@ package body DAGBuild.GUI is
             DAGBuild.GUI.State.Exit_Scope(st);
         end if;
 
-        Click := Widgets.Button (st,
-                                 150,
-                                 50,
-                                 "Two");
+        Click := Button (st,
+                         150,
+                         50,
+                         "Two");
 
         if Click then
             Clear_Color := st.Theme.InputValidation_infoBackground;
         end if;
 
-        Click := Widgets.Button (st,
-                                 50,
-                                 150,
-                                 "Three");
+        Click := Button (st,
+                         50,
+                         150,
+                         "Three");
 
         if Click then
             Clear_Color := st.Theme.InputValidation_warningBackground;
         end if;
 
-        Click := Widgets.Button (st,
-                                 150,
-                                 150,
-                                 "Quit");
+        Click := Button (st,
+                         150,
+                         150,
+                         "Quit");
         if Click then
             st.Done := True;
         end if;
 
         --Slider test
-        if Widgets.Vertical_Slider(st, 500, 40, 255, Integer(Red)) then
+        if Vertical_Slider(st, 500, 40, 255, Integer(Red)) then
             Clear_Color := (Red, Green, Blue, 255);
         end if;
 
-        if Widgets.Vertical_Slider(st, 550, 40, 255, Integer(Green)) then
+        if Vertical_Slider(st, 550, 40, 255, Integer(Green)) then
             Clear_Color := (Red, Green, Blue, 255);
         end if;
 
-        if Widgets.Vertical_Slider(st, 600, 40, 255, Integer(Blue)) then
+        if Vertical_Slider(st, 600, 40, 255, Integer(Blue)) then
             Clear_Color := (Red, Green, Blue, 255);
         end if;
 
-        Widgets.Label(st, "Hello DAGBuild!", 50, 300);
+        Label(st, "Hello DAGBuild!", 50, 300);
 
-        Click := Widgets.Text_Field(st, My_Str, 50, 350, 20, 40);
-        Click := Widgets.Text_Field(st, My_Str2, 50, 400, 20, 40);
+        Click := Text_Field(st, My_Str, 50, 350, 20, 40);
+        Click := Text_Field(st, My_Str2, 50, 400, 20, 40);
         
         IMGUI_Finish(st);
 
