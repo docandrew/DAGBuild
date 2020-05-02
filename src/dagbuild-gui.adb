@@ -202,8 +202,8 @@ package body DAGBuild.GUI is
 
         Widgets.Label(st, "Hello DAGBuild!", 50, 300);
 
-        Click := Widgets.Text_Field(st, My_Str, 50, 350);
-        Click := Widgets.Text_Field(st, My_Str2, 50, 400);
+        Click := Widgets.Text_Field(st, My_Str, 50, 350, 20, 40);
+        Click := Widgets.Text_Field(st, My_Str2, 50, 400, 20, 40);
         
         IMGUI_Finish(st);
 
