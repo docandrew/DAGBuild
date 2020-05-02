@@ -232,24 +232,20 @@ package body DAGBuild.GUI is
                 
                 when SDL.Events.Mice.Button_Down =>
                     if Event.Mouse_Button.Button = SDL.Events.Mice.Left then
+                        st.Mouse_Down := True;
+                        
                         -- two mouse-down events within the double-click threshold
                         if Ada.Real_Time.Clock <= st.Last_Click + DAGBuild.Settings.Double_Click_Threshold then
                             st.Double_Click := True;
                         end if;
 
-                        st.Mouse_Down := True;
                         st.Last_Click := Ada.Real_Time.Clock;
                     end if;
 
                 when SDL.Events.Mice.Button_Up =>
                     if Event.Mouse_Button.Button = SDL.Events.Mice.Left then
                         st.Mouse_Down := False;
-                        --st.Double_Click := False;
-
-                        -- Reset Double-Click if one just happened
-                        -- if st.Double_Click then
-                        --     st.Double_Click := False;
-                        -- end if;
+                        st.Word_Select := False;
                     end if;
 
                 when SDL.Events.Quit =>

@@ -953,10 +953,10 @@ package body DAGBuild.GUI.Widgets is
                             st.Cursor_Pos := i;
                             st.Selection_Start := st.Cursor_Pos;
                             st.Selection_End := st.Selection_Start;
-                            Cursor_Click_Update := False;
-                        end if;
 
-                        if Cursor_Drag_Update and Text_x >= st.Mouse_x then
+                            Cursor_Click_Update := False;
+                        elsif Cursor_Drag_Update and Text_x >= st.Mouse_x and not st.Word_Select then
+                            --@TODO handle expansion of selection when st.Word_Select is on.
                             --Ada.Text_IO.Put_Line ("drag" & i'Image);
                             -- if dragging the mouse, set cursor and adjust the
                             -- selection based on direction.
@@ -988,6 +988,7 @@ package body DAGBuild.GUI.Widgets is
                                 -- moved cursor none
                                 null;
                             end if;
+
                             Cursor_Drag_Update := False;
                         end if;
 
@@ -1002,15 +1003,19 @@ package body DAGBuild.GUI.Widgets is
                     -- If we haven't updated the Cursor by this point, it
                     --  was to the right of the text we just rendered.
                     if Cursor_Click_Update then
+                        --Ada.Text_IO.Put_Line("click2 at end");
                         st.Cursor_Pos := UBS.Length(Text) + 1;
                         st.Selection_Start := st.Cursor_Pos;
                         st.Selection_End := st.Selection_Start;
+
                         Cursor_Click_Update := False;
                     end if;
 
-                    if Cursor_Drag_Update then
+                    if Cursor_Drag_Update and not st.Word_Select then
+                        --Ada.Text_IO.Put_Line("drag2 at end");
                         st.Cursor_Pos := UBS.Length(Text) + 1;
                         st.Selection_End := st.Cursor_Pos;
+                        
                         Cursor_Drag_Update := False;
                     end if;
 
@@ -1019,6 +1024,35 @@ package body DAGBuild.GUI.Widgets is
                     if st.Cursor_Pos = UBS.Length (Text) + 1 then
                         Cursor_x := Text_x;
                     end if;
+                end if;
+
+                -- Expand selection if double clicked.
+                if st.Double_Click and UBS.Length (Text) > 0 then
+                    Select_Word: declare
+                    begin
+                        Ada.Text_IO.Put_Line("double click");
+                        -- st.Selection_Start := 1;
+                        -- st.Selection_End := UBS.Length (Text);
+                        if st.Cursor_Pos < UBS.Length (Text) then
+                            Expand_Start: for i in reverse 1 .. st.Cursor_Pos loop
+                                exit Expand_Start when Is_Word_End (UBS.Element (Text, i));
+                                st.Selection_Start := i;
+                                Ada.Text_IO.Put_Line("Expand start: " & i'Image);
+                            end loop Expand_Start;
+                        end if;
+
+                        if st.Cursor_Pos > 1 then
+                            Expand_End: for i in st.Cursor_Pos .. UBS.Length (Text) loop
+                                exit Expand_End when Is_Word_End (UBS.Element (Text, i));
+                                st.Selection_End := i + 1;
+                                Ada.Text_IO.Put_Line(" expand end: " & i'Image);
+                            end loop Expand_End;
+                        end if;
+
+                        Ada.Text_IO.Put_Line(" setting cursor: " & st.Selection_End'Image);
+                        st.Cursor_Pos := st.Selection_End;
+                        st.Word_Select := True;
+                    end Select_Word;
                 end if;
 
                 -- Draw the cursor at appropriate position when not blinked
@@ -1030,24 +1064,6 @@ package body DAGBuild.GUI.Widgets is
                                y2       => y + Field_Height - 2,
                                Color    => st.Theme.EditorCursor_foreground);
                     
-                end if;
-
-                -- Expand selection if double clicked.
-                if st.Double_Click and UBS.Length (Text) > 0 then
-                    Select_Word: declare
-                    begin
-                        Expand_Start: for i in reverse 1 .. st.Cursor_Pos loop
-                            exit Expand_Start when Is_Word_End (UBS.Element (Text, i));
-                            st.Selection_Start := i;
-                        end loop Expand_Start;
-
-                        Expand_End: for i in st.Cursor_Pos .. UBS.Length (Text) loop
-                            exit Expand_End when Is_Word_End (UBS.Element (Text, i));
-                            st.Selection_End := i;
-                        end loop Expand_End;
-
-                        st.Cursor_Pos := st.Selection_End;
-                    end Select_Word;
                 end if;
             end if; -- end "if active"
         end Draw_Chars;

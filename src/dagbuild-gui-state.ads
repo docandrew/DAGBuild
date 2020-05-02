@@ -61,6 +61,9 @@ package DAGBuild.GUI.State is
     --  focused text field.
     -- @field Selection_End is the end position of selected text within the 
     --  focused text field.
+    -- @field Word_Select is True if we just double-clicked to select a word,
+    --  and future cursor drags with the mouse button held down should continue
+    --  to select words.
     -- @field Last_Blink is the time at which the cursor last switched from
     --  blinking to non-blinking.
     -- @field Blink_On is True if the cursor is drawn, False otherwise.
@@ -97,6 +100,8 @@ package DAGBuild.GUI.State is
         Cursor_Pos      : Positive := 1;
         Selection_Start : Positive := 1;
         Selection_End   : Positive := 1;
+        Word_Select     : Boolean := False;
+
         --Selection_Dir   : Select_Direction;
         Last_Blink      : Ada.Real_Time.Time;
         Blink_On        : Boolean := True;
