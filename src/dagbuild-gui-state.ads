@@ -54,7 +54,7 @@ package DAGBuild.GUI.State is
     -- @field Kbd_Pressed is the key that was pressed
     -- @field Kbd_Modifier is shift, ctrl, alt, etc.
     -- @field Kbd_Heartbeat lets us know if the previously focused widget was
-    --  drawn.
+    --  drawn. Used when de-selecting hidden widgets.
     -- @field Kbd_Text is text entered from the keyboard.
     -- @field Cursor_Pos is the cursor position within the focused text field.
     -- @field Selection_Start is the start position of selected text within the

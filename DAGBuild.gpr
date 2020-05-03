@@ -23,7 +23,7 @@ project DAGBuild is
     end Builder;
 
     package Linker is
-        for Default_Switches ("Ada") use 
+        for Default_Switches ("Ada") use
         (
             "-Llib/",
             "-lsdlada", "-lSDL2main", "-lSDL2", "-lSDL2_image",

@@ -17,10 +17,11 @@ with DAGBuild.GUI;
 with DAGBuild.GUI.Settings;
 with DAGBuild.GUI.State;
 with DAGBuild.GUI.Widgets;
-with DAGBuild.GUI.Widgets.Button; use DAGBuild.GUI.Widgets.Button;
-with DAGBuild.GUI.Widgets.Label; use DAGBuild.GUI.Widgets.Label;
-with DAGBuild.GUI.Widgets.Slider; use DAGBuild.GUI.Widgets.Slider;
-with DAGBuild.GUI.Widgets.Text_Field; use DAGBuild.GUI.Widgets.Text_Field;
+with DAGBuild.GUI.Widgets.Button;       use DAGBuild.GUI.Widgets.Button;
+with DAGBuild.GUI.Widgets.Checkbox;     use DAGBuild.GUI.Widgets.Checkbox;
+with DAGBuild.GUI.Widgets.Label;        use DAGBuild.GUI.Widgets.Label;
+with DAGBuild.GUI.Widgets.Slider;       use DAGBuild.GUI.Widgets.Slider;
+with DAGBuild.GUI.Widgets.Text_Field;   use DAGBuild.GUI.Widgets.Text_Field;
 
 procedure Main is
     Window      : SDL.Video.Windows.Window;
@@ -37,6 +38,7 @@ procedure Main is
     My_Str      : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String("Input here");
     My_Str2     : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String("Or here");
     Click       : Boolean := False;
+    Show_Msg    : Boolean := False;
 
     -- Render screen elements
     procedure Render(st : in out DAGBuild.GUI.State.UIState)
@@ -80,24 +82,23 @@ procedure Main is
             Clear_Color := st.Theme.InputValidation_infoBackground;
         end if;
 
-        Click := Button (st,
-                         50,
-                         150,
-                         "Three");
+        Click := Button (st, 50, 150, "Three");
 
-        Click := Button (st,
-                         50,
-                         200,
-                         "Hello");
+        Click := Button (st, 50, 200, "Hello");
 
         if Click then
             Clear_Color := st.Theme.InputValidation_warningBackground;
         end if;
 
-        Click := Button (st,
-                         150,
-                         150,
-                         "Quit");
+        Checkbox (st, 150, 200, "Show Msg", Show_Msg);
+
+        if Show_Msg then
+            DAGBuild.GUI.State.Enter_Scope (st);
+            Label (st, "Msg", 50, 250);
+            DAGBuild.GUI.State.Exit_Scope (st);
+        end if;
+
+        Click := Button (st, 150, 150, "Quit");
         if Click then
             st.Done := True;
         end if;
@@ -130,7 +131,7 @@ begin
         raise Program_Error with "Unable to load SDL TTF Library";
     end if;
 
-    SDL.Video.Windows.Makers.Create(Win         => Window, 
+    SDL.Video.Windows.Makers.Create(Win         => Window,
                                     Title       => "DAGBuild v0.0.1",
                                     Position    => Init_Pos,
                                     Size        => Init_Size,
