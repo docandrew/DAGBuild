@@ -1,7 +1,6 @@
 
 with Interfaces.C;
 
---with Ada.Real_Time;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
@@ -12,24 +11,18 @@ with SDL.Hints;
 with SDL.Inputs.Keyboards;
 with SDL.Inputs.Mice.Cursors;
 with SDL.TTFs.Makers;
-with SDL.Video.Palettes;
 with SDL.Video.Renderers;
 with SDL.Video.Renderers.Makers;
 
 with DAGBuild.GUI.State;
-with DAGBuild.GUI.Widgets;
-with DAGBuild.GUI.Widgets.Button; use DAGBuild.GUI.Widgets.Button;
-with DAGBuild.GUI.Widgets.Label; use DAGBuild.GUI.Widgets.Label;
-with DAGBuild.GUI.Widgets.Slider; use DAGBuild.GUI.Widgets.Slider;
-with DAGBuild.GUI.Widgets.Text_Field; use DAGBuild.GUI.Widgets.Text_Field;
-with DAGBuild.Settings;
+with DAGBuild.GUI.Settings;
 
 pragma Wide_Character_Encoding(UTF8);
 
 package body DAGBuild.GUI is
 
     -- Start a round of widget drawing/interaction
-    procedure IMGUI_Start(st : in out DAGBuild.GUI.State.UIState)
+    procedure Start_Render(st : in out DAGBuild.GUI.State.UIState)
     is
     begin
         st.Hot_Item := DAGBuild.GUI.State.NO_ITEM;
@@ -37,17 +30,17 @@ package body DAGBuild.GUI is
 
         -- Enter the first scope
         DAGBuild.GUI.State.Enter_Scope(st);
-    end IMGUI_Start;
+    end Start_Render;
 
     -- Finish a round
-    procedure IMGUI_Finish (st : in out DAGBuild.GUI.State.UIState)
+    procedure Finish_Render (st : in out DAGBuild.GUI.State.UIState)
     is
         use Ada.Real_Time;
         use DAGBuild.GUI.State;
         Now : constant Ada.Real_Time.Time := Ada.Real_Time.Clock;
     begin
         -- Handle timing
-        if Now > st.Last_Blink + DAGBuild.Settings.Cursor_Blink_Rate then
+        if Now > st.Last_Blink + DAGBuild.GUI.Settings.Cursor_Blink_Rate then
             st.Blink_On := not (st.Blink_On);
             st.Last_Blink := Now;
         end if;
@@ -98,128 +91,22 @@ package body DAGBuild.GUI is
         if st.Curr_Scope /= NO_SCOPE then
             raise DAGBuild.GUI.State.Invalid_Scope_Exception with "Called IMGUI_Finish with unclosed scopes";
         end if;
-    end IMGUI_Finish;
 
-    -- Clear Screen
-    procedure Clear_Window(r : in out SDL.Video.Renderers.Renderer;
+        -- Update the underlying window surface
+        st.Renderer.Present;
+    end Finish_Render;
+
+
+    procedure Clear_Window(st : in out DAGBuild.GUI.State.UIState;
                            c : SDL.Video.Palettes.Colour)
     is
     begin
-        r.Set_Draw_Colour(c);
-        r.Clear;
+        st.Renderer.Set_Draw_Colour(c);
+        st.Renderer.Clear;
     end Clear_Window;
 
-    -- statics for UI demo
-    Show_Button : Boolean := False;
-    Red         : SDL.Video.Palettes.Colour_Component := 0;
-    Green       : SDL.Video.Palettes.Colour_Component := 0;
-    Blue        : SDL.Video.Palettes.Colour_Component := 0;
-    Clear_Color : SDL.Video.Palettes.Colour := DAGBuild.Settings.Default_Dark.Editor_background;
-    My_Str      : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String("Input here");
-    My_Str2     : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String("Or here");
-    Click       : Boolean := False;
 
-    -- Render screen elements
-    procedure Render(st : in out DAGBuild.GUI.State.UIState)
-    is
-        package Widgets renames DAGBuild.GUI.Widgets;
-        use Ada.Real_Time;   -- "+" operator
-
-        -- For buttery-smooth frame rate
-        Next_Period : constant Ada.Real_Time.Time := Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Delay_Period);
-    begin
-        Clear_Window(st.Renderer, Clear_Color);
-
-        IMGUI_Start(st);
-
-        --Window_Surface.Blit(Source => Text_Surface);
-        --Window.Update_Surface;
-
-        Click := Button (st,
-                         50,
-                         50,
-                         "One");
-
-        if Click then
-            Clear_Color := (255, 0, 0, 255);
-            Show_Button := True;
-        end if;
-
-        if Show_Button then
-            DAGBuild.GUI.State.Enter_Scope(st);
-                Click := Button(st,
-                                250,
-                                250,
-                                "Hide Me");
-
-                if Click then
-                    Clear_Color := st.Theme.InputValidation_errorBackground;
-                    Show_Button := False;
-                end if;
-
-                --Hidden_Button := (if Click then False else True);
-            DAGBuild.GUI.State.Exit_Scope(st);
-        end if;
-
-        Click := Button (st,
-                         150,
-                         50,
-                         "Two");
-
-        if Click then
-            Clear_Color := st.Theme.InputValidation_infoBackground;
-        end if;
-
-        Click := Button (st,
-                         50,
-                         150,
-                         "Three");
-
-        Click := Button (st,
-                         50,
-                         200,
-                         "Hello");
-
-        if Click then
-            Clear_Color := st.Theme.InputValidation_warningBackground;
-        end if;
-
-        Click := Button (st,
-                         150,
-                         150,
-                         "Quit");
-        if Click then
-            st.Done := True;
-        end if;
-
-        --Slider test
-        if Vertical_Slider(st, 500, 40, 255, Integer(Red)) then
-            Clear_Color := (Red, Green, Blue, 255);
-        end if;
-
-        if Vertical_Slider(st, 550, 40, 255, Integer(Green)) then
-            Clear_Color := (Red, Green, Blue, 255);
-        end if;
-
-        if Vertical_Slider(st, 600, 40, 255, Integer(Blue)) then
-            Clear_Color := (Red, Green, Blue, 255);
-        end if;
-
-        Label(st, "Hello DAGBuild!", 50, 300);
-
-        Click := Text_Field(st, My_Str, 50, 350, 20, 40);
-        Click := Text_Field(st, My_Str2, 50, 400, 20, 40);
-        
-        IMGUI_Finish(st);
-
-        st.Renderer.Present;
-
-        --@TODO if no activity, go into a "sleep" mode, keep the display
-        -- cached, but don't redraw widgets.
-        delay until Next_Period;
-        --st.ms_Ticks := st.ms_Ticks + Delay_Period;
-    end Render;
-
+    -- Poll for input events and place them in the UI state.
     procedure Handle_Inputs(st : in out DAGBuild.GUI.State.UIState)
     is
         use Ada.Real_Time;  -- "+" operator on Clock
@@ -240,7 +127,7 @@ package body DAGBuild.GUI is
                         st.Mouse_Down := True;
                         
                         -- two mouse-down events within the double-click threshold
-                        if Ada.Real_Time.Clock <= st.Last_Click + DAGBuild.Settings.Double_Click_Threshold then
+                        if Ada.Real_Time.Clock <= st.Last_Click + DAGBuild.GUI.Settings.Double_Click_Threshold then
                             st.Double_Click := True;
                         end if;
 
@@ -284,12 +171,15 @@ package body DAGBuild.GUI is
         
     end Handle_Inputs;
 
-    -- Main rendering and input handling loop
-    procedure Event_Loop (Window : in out SDL.Video.Windows.Window)
+    --@TODO if no activity, go into a "sleep" mode, listen for events
+    -- but don't redraw.
+    procedure Event_Loop (Window : in out SDL.Video.Windows.Window;
+                          Render : access procedure (st : in out DAGBuild.GUI.State.UIState))
     is
-        GUI_State       : DAGBuild.GUI.State.UIState;
+        use Ada.Real_Time;   -- "+" operator
         
-        --use SDL.Inputs.Mice;
+        GUI_State       : DAGBuild.GUI.State.UIState;
+        Next_Period     : Ada.Real_Time.Time;
     begin
         SDL.Hints.Set (SDL.Hints.Render_Scale_Quality, "1");
 
@@ -304,20 +194,26 @@ package body DAGBuild.GUI is
                                               Cursor_Name   => SDL.Inputs.Mice.Cursors.I_Beam);
 
         -- Load Font used by widgets
-        SDL.TTFs.Makers.Create (Font        => DAGBuild.GUI.Widgets.DAG_Font,
-                                File_Name   => DAGBuild.Settings.Font_Name,
-                                Point_Size  => DAGBuild.Settings.Font_Size);
+        SDL.TTFs.Makers.Create (Font        => DAGBuild.GUI.DAG_Font,
+                                File_Name   => DAGBuild.GUI.Settings.Font_Name,
+                                Point_Size  => DAGBuild.GUI.Settings.Font_Size);
         
         SDL.Inputs.Keyboards.Start_Text_Input;
         
         loop
+            Next_Period := Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Delay_Period);
+            
+            DAGBuild.GUI.Start_Render (GUI_State);
             Render (GUI_State);
+            DAGBuild.GUI.Finish_Render (GUI_State);
+            delay until Next_Period;    -- for buttery-smooth frame rate
+
             Handle_Inputs (GUI_State);
 
             exit when GUI_State.Done;
         end loop;
 
-        DAGBuild.GUI.Widgets.DAG_Font.Finalize;
+        DAG_Font.Finalize;
 
     end Event_Loop;
 

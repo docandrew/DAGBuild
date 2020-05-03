@@ -6,7 +6,8 @@ project DAGBuild is
     for Object_Dir use "build";
     for Source_Dirs use ("src", "../sdlada_lib_debug/include/sdlada.debug");
     for Exec_Dir use ".";
-    for Main use ("main.adb");
+    
+    for Main use ("main.adb", "calculator.adb");
 
     package Builder is
         for Executable ("main.adb") use "dagbuild.exe";

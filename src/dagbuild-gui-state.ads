@@ -7,7 +7,7 @@ with SDL.Events.Keyboards;
 with SDL.Inputs.Mice.Cursors;
 with SDL.Video.Renderers;
 
-with DAGBuild.Settings;
+with DAGBuild.GUI.Settings;
 
 package DAGBuild.GUI.State is
 
@@ -109,7 +109,7 @@ package DAGBuild.GUI.State is
         Last_Widget     : ID;
         Last_Scope      : Scope;
 
-        Theme           : DAGBuild.Settings.Color_Scheme := DAGBuild.Settings.Default_Dark;
+        Theme           : DAGBuild.GUI.Settings.Color_Scheme := DAGBuild.GUI.Settings.Default_Dark;
         Done            : Boolean := False;
     end record
         with Dynamic_Predicate => (Cursor_Pos = Selection_Start or Cursor_Pos = Selection_End);

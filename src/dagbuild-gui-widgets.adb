@@ -13,7 +13,7 @@ with SDL.Video.Surfaces;
 with SDL.Video.Textures;
 with SDL.Video.Textures.Makers;
 
--- with DAGBuild.Settings;
+-- with DAGBuild.GUI.Settings;
 
 package body DAGBuild.GUI.Widgets is
 

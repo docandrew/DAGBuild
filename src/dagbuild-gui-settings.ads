@@ -8,7 +8,7 @@ with SDL.Video.Windows;
 with DAGBuild.GUI.Themes; use DAGBuild.GUI.Themes;
 
 --@TODO load settings from a file, persist changes in window size, position
-package DAGBuild.Settings is
+package DAGBuild.GUI.Settings is
     
     -- Initial position of the window
     Init_Pos : SDL.Natural_Coordinates :=
@@ -403,4 +403,4 @@ package DAGBuild.Settings is
     Cursor_Blink_Rate       : Ada.Real_Time.Time_Span := Ada.Real_Time.Milliseconds(400);
     --Cursor_Duty_Cycle       : Duty_Cycle := 50;
 
-end DAGBuild.Settings;
+end DAGBuild.GUI.Settings;

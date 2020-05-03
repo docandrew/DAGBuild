@@ -2,13 +2,11 @@
 
 with DAGBuild.GUI.State;
 
-with SDL.TTFs;
+--with SDL.TTFs;
 with SDL.Video.Palettes;
 with SDL.Video.Renderers;
 
 package DAGBuild.GUI.Widgets is
-
-    DAG_Font        : SDL.TTFs.Fonts;
 
 -- Interface primitives used by child widget packages
 private
