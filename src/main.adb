@@ -6,6 +6,8 @@
 -- with Interfaces.C; use Interfaces.C;
 
 with Ada.Strings.Unbounded;
+with Ada.Strings.UTF_Encoding; use Ada.Strings.UTF_Encoding;
+
 
 with SDL;
 with SDL.TTFs;
@@ -34,9 +36,12 @@ procedure Main is
     Red         : SDL.Video.Palettes.Colour_Component := 0;
     Green       : SDL.Video.Palettes.Colour_Component := 0;
     Blue        : SDL.Video.Palettes.Colour_Component := 0;
+    Some_Int    : Integer := 0;
     Clear_Color : SDL.Video.Palettes.Colour := DAGBuild.GUI.Settings.Default_Dark.Editor_background;
     My_Str      : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String("Input here");
     My_Str2     : Ada.Strings.Unbounded.Unbounded_String := Ada.Strings.Unbounded.To_Unbounded_String("Or here");
+    
+    Smiley_Grin : String := ":)";
     Click       : Boolean := False;
     Show_Msg    : Boolean := False;
 
@@ -65,7 +70,7 @@ procedure Main is
                                 "Hide Me");
 
                 if Click then
-                    Clear_Color := st.Theme.InputValidation_errorBackground;
+                    Clear_Color := st.Theme.Terminal_ANSICyan;
                     Show_Button := False;
                 end if;
 
@@ -73,28 +78,27 @@ procedure Main is
             DAGBuild.GUI.State.Exit_Scope(st);
         end if;
 
-        Click := Button (st,
-                         150,
-                         50,
-                         "Two");
+        Click := Button (st, 150, 50, "Two");
 
         if Click then
-            Clear_Color := st.Theme.InputValidation_infoBackground;
+            Clear_Color := st.Theme.Terminal_ANSIGreen;
         end if;
+
+        Click := Horizontal_Slider (st, 50, 100, 255, Some_Int);
 
         Click := Button (st, 50, 150, "Three");
 
         Click := Button (st, 50, 200, "Hello");
 
         if Click then
-            Clear_Color := st.Theme.InputValidation_warningBackground;
+            Clear_Color := st.Theme.Terminal_ANSIBlack;
         end if;
 
         Checkbox (st, 150, 200, "Show Msg", Show_Msg);
 
         if Show_Msg then
             DAGBuild.GUI.State.Enter_Scope (st);
-            Label (st, "Msg", 50, 250);
+            Label (st, Smiley_Grin, 50, 250);
             DAGBuild.GUI.State.Exit_Scope (st);
         end if;
 
@@ -116,13 +120,13 @@ procedure Main is
             Clear_Color := (Red, Green, Blue, 255);
         end if;
 
-        Label(st, "Hello DAGBuild!", 50, 300);
+        Label(st, "Horiz Slider: " & Some_Int'Image, 50, 300);
 
         Click := Text_Field(st, My_Str, 50, 350, 20, 40);
         Click := Text_Field(st, My_Str2, 50, 400, 20, 40);
     end Render;
 begin
-    --@TODO: wrap this up in a DAGBuild.GUI "init" 
+    --@TODO: wrap this up in a DAGBuild.GUI "init"
     if not SDL.Initialise then
         raise Program_Error with "Unable to load SDL Library";
     end if;

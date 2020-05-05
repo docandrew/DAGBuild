@@ -392,6 +392,7 @@ package DAGBuild.GUI.Settings is
 
     Font_Name       : String := "Muli-Medium.ttf";    -- var-width
     --Font_Name       : String := "FiraCode-Regular.ttf"; -- fixed-width
+    --Font_Name       : String := "Fira Code Light Nerd Font Complete Mono Windows Compatible.ttf";
     Font_Size       : SDL.TTFs.Point_Sizes := 14;
 
     -- Accessibility
