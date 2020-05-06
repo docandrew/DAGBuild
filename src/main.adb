@@ -23,6 +23,7 @@ with DAGBuild.GUI.Widgets.Button;       use DAGBuild.GUI.Widgets.Button;
 with DAGBuild.GUI.Widgets.Checkbox;     use DAGBuild.GUI.Widgets.Checkbox;
 with DAGBuild.GUI.Widgets.Label;        use DAGBuild.GUI.Widgets.Label;
 with DAGBuild.GUI.Widgets.Slider;       use DAGBuild.GUI.Widgets.Slider;
+with DAGBuild.GUI.Widgets.Spinner;      use DAGBuild.GUI.Widgets.Spinner;
 with DAGBuild.GUI.Widgets.Text_Field;   use DAGBuild.GUI.Widgets.Text_Field;
 
 procedure Main is
@@ -44,6 +45,11 @@ procedure Main is
     Smiley_Grin : String := ":)";
     Click       : Boolean := False;
     Show_Msg    : Boolean := False;
+
+    type Spin_Class is (ONE, TWO, THREE, FOUR, FIVE);
+    Spin_Val : Spin_Class := THREE;
+
+    function Spin_Box is new Spinner (Spin_Class);
 
     -- Render screen elements
     procedure Render(st : in out DAGBuild.GUI.State.UIState)
@@ -83,6 +89,8 @@ procedure Main is
         if Click then
             Clear_Color := st.Theme.Terminal_ANSIGreen;
         end if;
+
+        Click := Spin_Box (st, 250, 50, Spin_Val);
 
         Click := Horizontal_Slider (st, 50, 100, 255, Some_Int);
 

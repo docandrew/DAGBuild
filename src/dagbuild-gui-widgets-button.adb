@@ -27,8 +27,8 @@ package body DAGBuild.GUI.Widgets.Button is
                      x              : SDL.Natural_Coordinate;
                      y              : SDL.Natural_Coordinate;
                      Label          : String := "";
-                     Button_Width   : SDL.Natural_Coordinate;
-                     Button_Height  : SDL.Natural_Coordinate) return Boolean
+                     Button_Width   : SDL.Positive_Dimension;
+                     Button_Height  : SDL.Positive_Dimension) return Boolean
     is
         use DAGBuild.GUI.State;
 

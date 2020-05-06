@@ -2,6 +2,7 @@
 with SDL;
 
 package DAGBuild.GUI.Widgets.Button is
+
     -- Draw button with size depending on font size
     function Button (st             : in out DAGBuild.GUI.State.UIState;
                      x              : SDL.Natural_Coordinate;
@@ -14,7 +15,7 @@ package DAGBuild.GUI.Widgets.Button is
                      x              : SDL.Natural_Coordinate;
                      y              : SDL.Natural_Coordinate;
                      Label          : String := "";
-                     Button_Width   : SDL.Natural_Coordinate;
-                     Button_Height  : SDL.Natural_Coordinate) return Boolean;
+                     Button_Width   : SDL.Positive_Dimension;
+                     Button_Height  : SDL.Positive_Dimension) return Boolean;
 
 end DAGBuild.GUI.Widgets.Button;
