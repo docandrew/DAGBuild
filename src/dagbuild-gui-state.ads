@@ -37,6 +37,7 @@ package DAGBuild.GUI.State is
     type Selection_Direction is (LEFT, NONE, RIGHT);
 
     -- Low-level state of the GUI for rendering and input handling
+    --@TODO change tooltip to a regular string.
     -- @field Renderer is the renderer for the app window
     -- @field Mouse_x is the x-position of the mouse
     -- @field Mouse_y is the y-position of the mouse
@@ -67,8 +68,12 @@ package DAGBuild.GUI.State is
     -- @field Last_Blink is the time at which the cursor last switched from
     --  blinking to non-blinking.
     -- @field Blink_On is True if the cursor is drawn, False otherwise.
-    -- @field Last_Widget is the ID of the last widget handled
-    -- @field Last_Scope is the scope of the last widget handled
+    -- @field Last_Widget is the ID of the last widget handled.
+    -- @field Last_Scope is the scope of the last widget handled.
+    -- @field Hover_Start is the time at which the mouse stopped moving last.
+    -- @field Tooltip is set by the hot widget when it has been hovered over,
+    --  and then rendered later (so it's on top of other drawn widgets).
+    -- @field Theme is the currently used color theme.
     -- @field Done is set to True if we are exiting the program.
 
     type UIState is
@@ -108,6 +113,9 @@ package DAGBuild.GUI.State is
 
         Last_Widget     : ID;
         Last_Scope      : Scope;
+
+        Hover_Start     : Ada.Real_Time.Time;
+        Tooltip         : Unbounded_String;
 
         Theme           : DAGBuild.GUI.Settings.Color_Scheme := DAGBuild.GUI.Settings.Default_Dark;
         Done            : Boolean := False;

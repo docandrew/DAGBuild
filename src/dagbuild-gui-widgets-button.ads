@@ -7,7 +7,8 @@ package DAGBuild.GUI.Widgets.Button is
     function Button (st             : in out DAGBuild.GUI.State.UIState;
                      x              : SDL.Natural_Coordinate;
                      y              : SDL.Natural_Coordinate;
-                     Label          : String := "") return Boolean;
+                     Label          : String := "";
+                     Tooltip        : String := "") return Boolean;
 
 
     -- Draw a button, return True if clicked
@@ -15,6 +16,7 @@ package DAGBuild.GUI.Widgets.Button is
                      x              : SDL.Natural_Coordinate;
                      y              : SDL.Natural_Coordinate;
                      Label          : String := "";
+                     Tooltip        : String := "";
                      Button_Width   : SDL.Positive_Dimension;
                      Button_Height  : SDL.Positive_Dimension) return Boolean;
 

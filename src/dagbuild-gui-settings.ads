@@ -317,8 +317,8 @@ package DAGBuild.GUI.Settings is
 		DiffEditor_insertedTextBackground           => Hex_Color(16#bae67e26#),
 		DiffEditor_removedTextBackground            => Hex_Color(16#f29e7426#),
         EditorWidget_background                     => Hex_Color(16#232834#),
-		EditorSuggestWidget_background              => Hex_Color(16#232834#),
-		EditorSuggestWidget_border                  => Hex_Color(16#101521#),
+		EditorSuggestWidget_background              => Hex_Color(16#23283499#),
+		EditorSuggestWidget_border                  => Hex_Color(16#ffd580#),
 		EditorSuggestWidget_highlightForeground     => Hex_Color(16#ffcc66#),
 		EditorSuggestWidget_selectedBackground      => Hex_Color(16#191e2a#),
 		EditorHoverWidget_background                => Hex_Color(16#232834#),
@@ -390,18 +390,15 @@ package DAGBuild.GUI.Settings is
 		Terminal_ansiBrightWhite                    => Hex_Color(16#ffffff#)
     );
 
-    Font_Name       : String := "Muli-Medium.ttf";    -- var-width
+    --Font_Name       : String := "Muli-Medium.ttf";    -- var-width
     --Font_Name       : String := "FiraCode-Regular.ttf"; -- fixed-width
-    --Font_Name       : String := "Fira Code Light Nerd Font Complete Mono Windows Compatible.ttf";
+    Font_Name       : String := "Fira Code Medium Nerd Font Complete Mono.ttf";
     Font_Size       : SDL.TTFs.Point_Sizes := 14;
-
-    -- Accessibility
-
-    -- Time between clicks to register as a double-click
-    --Type Duty_Cycle is new Integer range 1 .. 100;
 
     Double_Click_Threshold  : Ada.Real_Time.Time_Span := Ada.Real_Time.Milliseconds(500);
     Cursor_Blink_Rate       : Ada.Real_Time.Time_Span := Ada.Real_Time.Milliseconds(400);
-    --Cursor_Duty_Cycle       : Duty_Cycle := 50;
+
+    -- Length of time required for the mouse to sit still before it's considered "hovering"
+    Hover_Tooltip_Time      : Ada.Real_Time.Time_Span := Ada.Real_Time.Milliseconds(1200);
 
 end DAGBuild.GUI.Settings;

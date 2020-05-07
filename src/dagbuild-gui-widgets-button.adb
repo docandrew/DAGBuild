@@ -1,4 +1,5 @@
-
+with Ada.Real_Time;
+with Ada.Strings.Unbounded;
 with DAGBuild.GUI.Settings;
 
 with Interfaces.C; use Interfaces.C;
@@ -12,13 +13,14 @@ package body DAGBuild.GUI.Widgets.Button is
     function Button (st             : in out DAGBuild.GUI.State.UIState;
                      x              : SDL.Natural_Coordinate;
                      y              : SDL.Natural_Coordinate;
-                     Label          : String := "") return Boolean
+                     Label          : String := "";
+                     Tooltip        : String := "") return Boolean
     is
         Button_Width     : constant SDL.Positive_Dimension := SDL.Positive_Dimension(DAGBuild.GUI.Settings.Font_Size) * 
                                                                  SDL.Positive_Dimension(5);
         Button_Height    : constant SDL.Positive_Dimension := 2 * SDL.Positive_Dimension(DAGBuild.GUI.Settings.Font_Size);
     begin
-        return Button(st, x, y, Label, Button_Width, Button_Height);
+        return Button(st, x, y, Label, Tooltip, Button_Width, Button_Height);
     end Button;
 
 
@@ -27,9 +29,13 @@ package body DAGBuild.GUI.Widgets.Button is
                      x              : SDL.Natural_Coordinate;
                      y              : SDL.Natural_Coordinate;
                      Label          : String := "";
+                     Tooltip        : String := "";
                      Button_Width   : SDL.Positive_Dimension;
                      Button_Height  : SDL.Positive_Dimension) return Boolean
     is
+        package UBS renames Ada.Strings.Unbounded;
+
+        use Ada.Real_Time;  -- "+" operator
         use DAGBuild.GUI.State;
 
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
@@ -52,6 +58,13 @@ package body DAGBuild.GUI.Widgets.Button is
         if Region_Hit (st, x, y, Button_Width, Button_Height) then
             st.Hot_Item     := id;
             st.Hot_Scope    := Scope;
+            
+            -- Handle tooltip. It won't get rendered until later in the frame.
+            --@TODO make this its own function, see if st.Tooltip is already set
+            --  to avoid the extra work.
+            if Tooltip'Length /= 0 and Ada.Real_Time.Clock > st.Hover_Start + DAGBuild.GUI.Settings.Hover_Tooltip_Time then
+                st.Tooltip := UBS.To_Unbounded_String (Tooltip);
+            end if;
 
             if st.Active_Item = NO_ITEM and st.Mouse_Down then
                 st.Active_Item  := id;

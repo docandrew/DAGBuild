@@ -121,6 +121,8 @@ package body DAGBuild.GUI is
                 when SDL.Events.Mice.Motion =>
                     st.mouse_x := Event.Mouse_Motion.X;
                     st.mouse_y := Event.Mouse_Motion.Y;
+                    st.Hover_Start := Ada.Real_Time.Clock;
+                    st.Tooltip := Ada.Strings.Unbounded.To_Unbounded_String ("");
                 
                 when SDL.Events.Mice.Button_Down =>
                     if Event.Mouse_Button.Button = SDL.Events.Mice.Left then

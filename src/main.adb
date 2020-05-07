@@ -25,6 +25,7 @@ with DAGBuild.GUI.Widgets.Label;        use DAGBuild.GUI.Widgets.Label;
 with DAGBuild.GUI.Widgets.Slider;       use DAGBuild.GUI.Widgets.Slider;
 with DAGBuild.GUI.Widgets.Spinner;      use DAGBuild.GUI.Widgets.Spinner;
 with DAGBuild.GUI.Widgets.Text_Field;   use DAGBuild.GUI.Widgets.Text_Field;
+with DAGBuild.GUI.Widgets.Tooltip;      use DAGBuild.GUI.Widgets.Tooltip;
 
 procedure Main is
     Window      : SDL.Video.Windows.Window;
@@ -58,10 +59,7 @@ procedure Main is
     begin
         DAGBuild.GUI.Clear_Window(st, Clear_Color);
 
-        Click := Button (st,
-                         50,
-                         50,
-                         "One");
+        Click := Button (st, 50, 50, "One", "This is a tooltip!");
 
         if Click then
             Clear_Color := (255, 0, 0, 255);
@@ -70,10 +68,7 @@ procedure Main is
 
         if Show_Button then
             DAGBuild.GUI.State.Enter_Scope(st);
-                Click := Button(st,
-                                250,
-                                250,
-                                "Hide Me");
+                Click := Button(st, 250, 250, "Hide Me", "I have a tooltip too.");
 
                 if Click then
                     Clear_Color := st.Theme.Terminal_ANSICyan;
@@ -84,7 +79,7 @@ procedure Main is
             DAGBuild.GUI.State.Exit_Scope(st);
         end if;
 
-        Click := Button (st, 150, 50, "Two");
+        Click := Button (st, 150, 50, "Two", " Tooltips!!!");
 
         if Click then
             Clear_Color := st.Theme.Terminal_ANSIGreen;
@@ -128,10 +123,15 @@ procedure Main is
             Clear_Color := (Red, Green, Blue, 255);
         end if;
 
-        Label(st, "Horiz Slider: " & Some_Int'Image, 50, 300);
+        Label(st, "Horiz Slider: " & Some_Int'Image, 50, 300, 14);
 
         Click := Text_Field(st, My_Str, 50, 350, 20, 40);
         Click := Text_Field(st, My_Str2, 50, 400, 20, 40);
+
+        -- If any widgets specified a tooltip, render them now.
+        if Ada.Strings.Unbounded.Length (st.Tooltip) /= 0 then
+            Tooltip (st);
+        end if;
     end Render;
 begin
     --@TODO: wrap this up in a DAGBuild.GUI "init"

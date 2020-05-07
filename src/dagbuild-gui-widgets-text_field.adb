@@ -12,7 +12,6 @@ with DAGBuild.GUI.Settings;
 
 package body DAGBuild.GUI.Widgets.Text_Field is
 
-
     -- For ctrl+click and double-click whole-word expansion
     function Is_Word_End (Char : Character) return Boolean
     is
