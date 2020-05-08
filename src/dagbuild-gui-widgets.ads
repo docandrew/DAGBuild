@@ -45,10 +45,14 @@ private
     -- Render text at a specified location 
     -- @field x is top-left corner
     -- @field y is top-left corner
-    -- @field w is the width of the drawn text (output)
-    -- @field h is the height of the drawn text (output)
+    -- @field w is the width of the drawn text plus the padding on either
+    --  side of the text, if specified. (output)
+    -- @field h is the height of the drawn text plus the padding on top and
+    --  bottom of the text, if specified. (output)
     -- @field Color is the color of the text to draw
     -- @field BG_Color is the background color to use
+    -- @field Padding surrounds the text with pixels of the background color
+    --  on all sides.
     procedure Draw_Text (r          : in out SDL.Video.Renderers.Renderer;
                          Text       : String;
                          x          : SDL.Coordinate;
@@ -56,8 +60,7 @@ private
                          w          : out SDL.Dimension;
                          h          : out SDL.Dimension;
                          Color      : SDL.Video.Palettes.Colour;
-                         BG_Color   : SDL.Video.Palettes.Colour);
-
-
+                         BG_Color   : SDL.Video.Palettes.Colour;
+                         Padding    : SDL.Natural_Dimension := 0);
 
 end DAGBuild.GUI.Widgets;

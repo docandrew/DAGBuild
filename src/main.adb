@@ -1,7 +1,7 @@
 -- with Ada.Numerics.Elementary_Functions;
 -- with Ada.Numerics.Generic_Real_Arrays;
 
--- with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 -- with Interfaces.C; use Interfaces.C;
 
@@ -45,7 +45,9 @@ procedure Main is
     
     Smiley_Grin : String := ":)";
     Click       : Boolean := False;
-    Show_Msg    : Boolean := False;
+    Dark_Mode   : Boolean := True;
+
+    Reload_Default_Background_Color : Boolean := True;
 
     type Spin_Class is (ONE, TWO, THREE, FOUR, FIVE);
     Spin_Val : Spin_Class := THREE;
@@ -55,8 +57,18 @@ procedure Main is
     -- Render screen elements
     procedure Render(st : in out DAGBuild.GUI.State.UIState)
     is
-        --package Widgets renames DAGBuild.GUI.Widgets;
+        use ASCII;
     begin
+        if Dark_Mode then
+            st.Theme := DAGBuild.GUI.Settings.Default_Dark;
+        else
+            st.Theme := DAGBuild.GUI.Settings.Default_Light;
+        end if;
+
+        if Reload_Default_Background_Color then
+            Clear_Color := st.Theme.Editor_Background;
+        end if;
+
         DAGBuild.GUI.Clear_Window(st, Clear_Color);
 
         Click := Button (st, 50, 50, "One", "This is a tooltip!");
@@ -97,13 +109,13 @@ procedure Main is
             Clear_Color := st.Theme.Terminal_ANSIBlack;
         end if;
 
-        Checkbox (st, 150, 200, "Show Msg", Show_Msg);
+        Reload_Default_Background_Color := Checkbox (st, 150, 200, "Dark Mode", Dark_Mode);
 
-        if Show_Msg then
-            DAGBuild.GUI.State.Enter_Scope (st);
-            Label (st, Smiley_Grin, 50, 250);
-            DAGBuild.GUI.State.Exit_Scope (st);
-        end if;
+        -- if Show_Msg then
+        --     DAGBuild.GUI.State.Enter_Scope (st);
+        --     Label (st, Smiley_Grin, 50, 250);
+        --     DAGBuild.GUI.State.Exit_Scope (st);
+        -- end if;
 
         Click := Button (st, 150, 150, "Quit");
         if Click then

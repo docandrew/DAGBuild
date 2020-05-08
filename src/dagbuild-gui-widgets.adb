@@ -74,13 +74,7 @@ package body DAGBuild.GUI.Widgets is
         r.Draw (Rectangle => (x, y, w, h));
     end Outline_Rect;
 
-    -- Draw text at a specified location 
-    -- @field x is top-left corner
-    -- @field y is top-left corner
-    -- @field w is the width of the drawn text (output)
-    -- @field h is the height of the drawn text (output)
-    -- @field Color is the color of the text to draw
-    -- @field BG_Color is the background color to use
+
     procedure Draw_Text (r          : in out SDL.Video.Renderers.Renderer;
                          Text       : String;
                          x          : SDL.Coordinate;
@@ -88,7 +82,8 @@ package body DAGBuild.GUI.Widgets is
                          w          : out SDL.Dimension;
                          h          : out SDL.Dimension;
                          Color      : SDL.Video.Palettes.Colour;
-                         BG_Color   : SDL.Video.Palettes.Colour)
+                         BG_Color   : SDL.Video.Palettes.Colour;
+                         Padding    : SDL.Natural_Dimension := 0)
     is
         Text_Surface    : SDL.Video.Surfaces.Surface;
         Text_Texture    : SDL.Video.Textures.Texture;
@@ -101,11 +96,11 @@ package body DAGBuild.GUI.Widgets is
             return;
         end if;
 
-        -- Text_Surface := DAG_Font.Render_UTF_8_Blended (Text    => Text,
-        --                                                Colour  => Color);
-        Text_Surface := DAG_Font.Render_UTF_8_Shaded (Text              => Text,
-                                                      Colour            => Color,
-                                                      Background_Colour => BG_Color);
+        Text_Surface := DAG_Font.Render_UTF_8_Blended (Text    => Text,
+                                                       Colour  => Color);
+        -- Text_Surface := DAG_Font.Render_UTF_8_Shaded (Text              => Text,
+        --                                               Colour            => Color,
+        --                                               Background_Colour => BG_Color);
 
                                                       
 
@@ -113,12 +108,15 @@ package body DAGBuild.GUI.Widgets is
                                           Renderer  => r,
                                           Surface   => Text_Surface);
 
-        Text_Rect.X := x;
-        Text_Rect.Y := y;
+        Text_Rect.X := x + Padding;
+        Text_Rect.Y := y + Padding;
         Text_Rect.Width := Text_Texture.Get_Size.Width;
         Text_Rect.Height := Text_Texture.Get_Size.Height;
-        w := Text_Rect.Width;
-        h := Text_Rect.Height;
+        w := Text_Rect.Width + 2 * Padding;
+        h := Text_Rect.Height + 2 * Padding;
+
+        -- Draw an underlying rectangle of the BG color.
+        Draw_Rect (r, x, y, w, h, BG_Color);
 
         -- Blit text from the texture into the renderer
         r.Copy (Copy_From   => Text_Texture,

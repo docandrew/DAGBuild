@@ -8,11 +8,11 @@ with SDL.Events.Keyboards;
 
 package body DAGBuild.GUI.Widgets.Checkbox is
 
-    procedure Checkbox (st            : in out DAGBuild.GUI.State.UIState;
-                        x             : SDL.Natural_Coordinate;
-                        y             : SDL.Natural_Coordinate;
-                        Label         : String := "";
-                        Checked       : in out Boolean)
+    function Checkbox (st            : in out DAGBuild.GUI.State.UIState;
+                       x             : SDL.Natural_Coordinate;
+                       y             : SDL.Natural_Coordinate;
+                       Label         : String := "";
+                       Checked       : in out Boolean) return Boolean
     is
         use DAGBuild.GUI.State;
 
@@ -32,6 +32,7 @@ package body DAGBuild.GUI.Widgets.Checkbox is
         Label_y : constant SDL.Positive_Dimension := y + Offset_y;
 
         Preview         : Boolean := False;
+        Changed         : Boolean := False;
     begin
 
         if Region_Hit (st, x, y + Offset_y, Button_Width, Button_Height) then
@@ -96,15 +97,17 @@ package body DAGBuild.GUI.Widgets.Checkbox is
                        st.Theme.Button_Foreground);
         end if;
 
-        -- Always draw label
-        Draw_Text (r        => st.Renderer,
-                   Text     => Label,
-                   x        => Label_x,
-                   y        => Label_y,
-                   w        => Dummy_w,
-                   h        => Dummy_h,
-                   Color    => st.Theme.Button_Foreground,
-                   BG_Color => st.Theme.Editor_Background);
+        -- Always draw label if there is one.
+        if Label'Length /= 0 then
+            Draw_Text (r        => st.Renderer,
+                       Text     => Label,
+                       x        => Label_x,
+                       y        => Label_y,
+                       w        => Dummy_w,
+                       h        => Dummy_h,
+                       Color    => st.Theme.Input_Foreground,
+                       BG_Color => (0,0,0,0)); --st.Theme.Editor_Background);
+        end if;
 
         -- Keyboard input processing
         HandleKeys: declare
@@ -131,6 +134,7 @@ package body DAGBuild.GUI.Widgets.Checkbox is
                         -- act like a press occurred.
                         st.Kbd_Pressed := NO_KEY;
                         Checked := not Checked;
+                        Changed := True;
                     when others =>
                         null;
                 end case;
@@ -145,7 +149,10 @@ package body DAGBuild.GUI.Widgets.Checkbox is
             st.Hot_Item = id and st.Hot_Scope = Scope and
             st.Active_Item = id and st.Active_Scope = Scope then
            Checked := not Checked;
+           Changed := True;
         end if;
+
+        return Changed;
     end Checkbox;
 
 end DAGBuild.GUI.Widgets.Checkbox;

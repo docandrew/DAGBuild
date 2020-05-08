@@ -187,6 +187,7 @@ package body DAGBuild.GUI is
 
         -- Create hardware renderer if available
         SDL.Video.Renderers.Makers.Create (GUI_State.Renderer, Window);
+        SDL.Video.Renderers.Set_Blend_Mode (GUI_State.Renderer, SDL.Video.Alpha_Blend);
 
         -- Create a cursor for the text fields
         SDL.Inputs.Mice.Cursors.Create_System_Cursor (Self  => DAGBuild.GUI.State.Arrow_Cursor,

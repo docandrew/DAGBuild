@@ -8,7 +8,8 @@ package body DAGBuild.GUI.Widgets.Tooltip is
     is
         package UBS renames Ada.Strings.Unbounded;
 
-        --@TODO get screen dimensions to make sure we aren't rendering off-screen.
+        --@TODO get screen dimensions to make sure we aren't rendering off-screen,
+        -- adjust these in a way that makes sense.
         Offset_X : constant SDL.Positive_Dimension := 16;
         Offset_Y : constant SDL.Positive_Dimension := 16;
 
@@ -21,15 +22,16 @@ package body DAGBuild.GUI.Widgets.Tooltip is
                    y        => st.Mouse_y + Offset_Y,
                    w        => w,
                    h        => h,
-                   Color    => st.Theme.EditorSuggestWidget_highlightForeground,
-                   BG_Color => st.Theme.EditorSuggestWidget_background);
+                   Color    => st.Theme.EditorSuggestWidget_Foreground,
+                   BG_Color => st.Theme.EditorSuggestWidget_Background,
+                   Padding  => 10);
 
         Outline_Rect (st.Renderer,
                       st.Mouse_x + Offset_X,
                       st.Mouse_y + Offset_Y,
                       w,
                       h,
-                      st.Theme.EditorSuggestWidget_border);
+                      st.Theme.EditorSuggestWidget_Border);
     end Tooltip;
 
 end DAGBuild.GUI.Widgets.Tooltip;

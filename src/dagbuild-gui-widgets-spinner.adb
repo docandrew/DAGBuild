@@ -42,7 +42,8 @@ package body DAGBuild.GUI.Widgets.Spinner is
                  T'Image(Val),
                  x => x + Button_Width + 2,
                  y => y,
-                 Display_Length => 5);
+                 Display_Length => 5,
+                 BG_Color => st.Theme.Input_Background);
         
         Plus := B.Button (st, x + 90, y, "+", "", Button_Width, Button_Height);
 

@@ -3,6 +3,8 @@ with DAGBuild.GUI.Settings;
 
 with Interfaces.C; use Interfaces.C;
 
+with SDL.Video.Palettes;
+
 package body DAGBuild.GUI.Widgets.Label is
 
     -- Draw a label with the given text a specific location
@@ -10,8 +12,11 @@ package body DAGBuild.GUI.Widgets.Label is
                     Text            : String;
                     x               : SDL.Natural_Coordinate;
                     y               : SDL.Natural_Coordinate;
-                    Display_Length  : Natural := 10)
+                    Display_Length  : Natural := 10;
+                    BG_Color        : SDL.Video.Palettes.Colour := (0,0,0,0))
     is
+        use SDL.Video.Palettes; -- for "/=" operator in color components
+
         -- Labels have an id and scope, but we ignore them
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
         scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
@@ -27,12 +32,14 @@ package body DAGBuild.GUI.Widgets.Label is
         w : SDL.Dimension;
         h : SDL.Dimension;
     begin
-        Draw_Rect (st.Renderer,
-                   x,
-                   y,
-                   Field_Width,
-                   Field_Height,
-                   st.Theme.Input_Background);
+        if BG_Color.Alpha /= 0 then
+            Draw_Rect (st.Renderer,
+                       x,
+                       y,
+                       Field_Width,
+                       Field_Height,
+                       st.Theme.Input_Background);
+        end if;
 
         Draw_Text (r        => st.Renderer,
                    Text     => Text, 
@@ -41,7 +48,7 @@ package body DAGBuild.GUI.Widgets.Label is
                    w        => w,
                    h        => h,
                    Color    => st.Theme.Input_Foreground,
-                   BG_Color => st.Theme.Input_Background);
+                   BG_Color => BG_Color); --st.Theme.Input_Background);
     end Label;
 
 end DAGBuild.GUI.Widgets.Label;
