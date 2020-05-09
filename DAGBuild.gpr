@@ -1,6 +1,10 @@
 -- Bootstrap build script for DAGBuild
 
 project DAGBuild is
+    -- On Windows, $OS is defined as "Windows_NT". Here we'll assume that if it
+    -- isn't defined, that Linux is in use, unless otherwise specified.
+    type OS_Type is ("Linux", "Windows_NT", "OSX");
+    OS : OS_Type := external ("OS", "Linux");
 
     for Languages use ("Ada");
     for Object_Dir use "build";
@@ -23,12 +27,22 @@ project DAGBuild is
     end Builder;
 
     package Linker is
-        for Default_Switches ("Ada") use
-        (
-            "-Llib/",
-            "-lsdlada", "-lSDL2main", "-lSDL2", "-lSDL2_image",
-            "-lSDL2_ttf", "-lmingw32", "-mwindows", "-mconsole"
-        );
+        case OS is
+            when "Windows_NT" =>
+                for Default_Switches ("Ada") use
+                (
+                    "-Llib/",
+                    "-lsdlada", "-lSDL2main", "-lSDL2", "-lSDL2_image",
+                    "-lSDL2_ttf", "-lmingw32", "-mwindows", "-mconsole"
+                );
+            when "Linux" | "OSX" =>
+                for Default_Switches ("Ada") use
+                (
+                    "-Llib/",
+                    "-lsdlada", "-lSDL2main", "-lSDL2", "-lSDL2_image",
+                    "-lSDL2_ttf"
+                );
+        end case;
     end Linker;
 
 end DAGBuild;
