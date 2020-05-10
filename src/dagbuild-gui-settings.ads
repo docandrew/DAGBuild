@@ -20,8 +20,8 @@ package DAGBuild.GUI.Settings is
     -- Initial Size of the window
     Init_Size : SDL.Positive_Sizes := 
     (
-        Width  => 640,
-        Height => 480
+        Width  => 1920,
+        Height => 1080
     );
 
     Font_Name       : String := "Muli-Medium.ttf";    -- var-width

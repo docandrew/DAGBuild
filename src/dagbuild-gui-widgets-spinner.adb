@@ -39,9 +39,9 @@ package body DAGBuild.GUI.Widgets.Spinner is
 
         --@TODO make this an editable field.
         L.Label (st,
-                 T'Image(Val),
                  x => x + Button_Width + 2,
                  y => y,
+                 Text => T'Image(Val),
                  Display_Length => 5,
                  BG_Color => st.Theme.Input_Background);
         

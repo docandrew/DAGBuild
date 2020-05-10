@@ -182,6 +182,9 @@ package body DAGBuild.GUI is
         
         GUI_State       : DAGBuild.GUI.State.UIState;
         Next_Period     : Ada.Real_Time.Time;
+        Start_Time      : Ada.Real_Time.Time;
+        End_Time        : Ada.Real_Time.Time;
+        Render_ms       : Time_Span;
     begin
         SDL.Hints.Set (SDL.Hints.Render_Scale_Quality, "1");
 
@@ -204,12 +207,19 @@ package body DAGBuild.GUI is
         SDL.Inputs.Keyboards.Start_Text_Input;
         
         loop
-            Next_Period := Ada.Real_Time.Clock + Ada.Real_Time.Milliseconds(Delay_Period);
+            Start_Time := Ada.Real_Time.Clock;
+            Next_Period := Start_Time + Ada.Real_Time.Microseconds (Delay_Period_us);
             
             DAGBuild.GUI.Start_Render (GUI_State);
             Render (GUI_State);
             DAGBuild.GUI.Finish_Render (GUI_State);
-            delay until Next_Period;    -- for buttery-smooth frame rate
+
+            if Lock_Frame_Rate then
+                delay until Next_Period;    -- for buttery-smooth frame rate
+            end if;
+
+            End_Time := Ada.Real_Time.Clock;
+            Render_Time := End_Time - Start_Time;
 
             Handle_Inputs (GUI_State);
 

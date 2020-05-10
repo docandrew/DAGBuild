@@ -13,7 +13,11 @@ package DAGBuild.GUI is
 
     --@TODO consider making this a setting
     Frame_Rate      : constant := 60;   -- fps
-    Delay_Period    : constant Integer := 1000 / Frame_Rate;
+    Delay_Period_us : constant Integer := 1_000_000 / Frame_Rate;
+    Lock_Frame_Rate : Boolean := True;
+    
+    -- Length of time required to render a frame.
+    Render_Time     : Ada.Real_Time.Time_Span := Ada.Real_Time.Milliseconds (1);
 
     procedure Start_Render (st : in out DAGBuild.GUI.State.UIState);
     procedure Finish_Render (st : in out DAGBuild.GUI.State.UIState);

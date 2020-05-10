@@ -1,6 +1,7 @@
 -- with Ada.Numerics.Elementary_Functions;
 -- with Ada.Numerics.Generic_Real_Arrays;
-
+with Ada.Calendar; use Ada.Calendar;
+with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Text_IO; use Ada.Text_IO;
 
 -- with Interfaces.C; use Interfaces.C;
@@ -46,6 +47,7 @@ procedure Main is
     Smiley_Grin : String := ":)";
     Click       : Boolean := False;
     Dark_Mode   : Boolean := True;
+    Show_FPS    : Boolean := False;
 
     Reload_Default_Background_Color : Boolean := True;
 
@@ -80,14 +82,13 @@ procedure Main is
 
         if Show_Button then
             DAGBuild.GUI.State.Enter_Scope(st);
-                Click := Button(st, 250, 250, "Hide Me", "I have a tooltip too.");
+                Click := Button(st, 50, 250, "Hide Me", "I have a tooltip too.");
 
                 if Click then
                     Clear_Color := st.Theme.Terminal_ANSICyan;
                     Show_Button := False;
                 end if;
 
-                --Hidden_Button := (if Click then False else True);
             DAGBuild.GUI.State.Exit_Scope(st);
         end if;
 
@@ -111,11 +112,9 @@ procedure Main is
 
         Reload_Default_Background_Color := Checkbox (st, 150, 200, "Dark Mode", Dark_Mode);
 
-        -- if Show_Msg then
-        --     DAGBuild.GUI.State.Enter_Scope (st);
-        --     Label (st, Smiley_Grin, 50, 250);
-        --     DAGBuild.GUI.State.Exit_Scope (st);
-        -- end if;
+        Click := Checkbox (st, 300, 200, "Show frame rate", Show_FPS);
+
+        Click := Checkbox (st, 150, 250, "Lock frame rate at 60 fps", DAGBuild.GUI.Lock_Frame_Rate);
 
         Click := Button (st, 150, 150, "Quit");
         if Click then
@@ -135,7 +134,16 @@ procedure Main is
             Clear_Color := (Red, Green, Blue, 255);
         end if;
 
-        Label(st, "Horiz Slider: " & Some_Int'Image, 50, 300, 14);
+        if Show_FPS then
+            DAGBuild.GUI.State.Enter_Scope (st);
+                Label (st, 650, 50, 
+                    "Render time   : " & Duration'Image (Ada.Real_Time.To_Duration (DAGBuild.GUI.Render_Time)) & " s");
+                Label (st, 650, 75,
+                    "Max frame rate: " & Integer'Image (Seconds (1) / DAGBuild.GUI.Render_Time) & " fps");
+            DAGBuild.GUI.State.Exit_Scope (st);
+        end if;
+
+        Label(st, 50, 300, "Horiz Slider: " & Some_Int'Image, 14);
 
         Click := Text_Field(st, My_Str, 50, 350, 20, 40);
         Click := Text_Field(st, My_Str2, 50, 400, 20, 40);

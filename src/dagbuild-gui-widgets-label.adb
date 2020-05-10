@@ -9,9 +9,9 @@ package body DAGBuild.GUI.Widgets.Label is
 
     -- Draw a label with the given text a specific location
     procedure Label(st              : in out DAGBuild.GUI.State.UIState;
-                    Text            : String;
                     x               : SDL.Natural_Coordinate;
                     y               : SDL.Natural_Coordinate;
+                    Text            : String;
                     Display_Length  : Natural := 10;
                     BG_Color        : SDL.Video.Palettes.Colour := (0,0,0,0))
     is
