@@ -17,7 +17,7 @@ package body DAGBuild.GUI.Widgets.Checkbox is
         use DAGBuild.GUI.State;
 
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
-        Scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
+        Scope   : constant DAGBuild.GUI.State.Scope_ID := st.Curr_Scope;
         
         Dummy_w : SDL.Positive_Dimension;
         Dummy_h : SDL.Positive_Dimension;

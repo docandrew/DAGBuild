@@ -317,7 +317,7 @@ package body DAGBuild.GUI.Widgets.Text_Field is
         use DAGBuild.GUI.State;
 
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
-        scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
+        scope   : constant DAGBuild.GUI.State.Scope_ID := st.Curr_Scope;
         
         -- Size (in pixels) of the field. @TODO: Need to scale this by ppi
         Field_Width     : constant SDL.Positive_Dimension := SDL.Positive_Dimension(DAGBuild.GUI.Settings.Font_Size) * 

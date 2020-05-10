@@ -19,7 +19,7 @@ package body DAGBuild.GUI.Widgets.Label is
 
         -- Labels have an id and scope, but we ignore them
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
-        scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
+        scope   : constant DAGBuild.GUI.State.Scope_ID := st.Curr_Scope;
         pragma Unreferenced(id, scope);
 
         Field_Width     : constant SDL.Positive_Dimension := SDL.Positive_Dimension(DAGBuild.GUI.Settings.Font_Size) * 

@@ -15,7 +15,7 @@ package body DAGBuild.GUI.Widgets.Slider is
         use DAGBuild.GUI.State;
 
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
-        scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
+        scope   : constant DAGBuild.GUI.State.Scope_ID := st.Curr_Scope;
 
         Slider_Width    : constant SDL.Positive_Dimension := 12;
         Slider_Height   : constant SDL.Positive_Dimension := 255;
@@ -166,7 +166,7 @@ package body DAGBuild.GUI.Widgets.Slider is
         use DAGBuild.GUI.State;
 
         id      : constant DAGBuild.GUI.State.ID := DAGBuild.GUI.State.Next_ID(st);
-        scope   : constant DAGBuild.GUI.State.Scope := st.Curr_Scope;
+        scope   : constant DAGBuild.GUI.State.Scope_ID := st.Curr_Scope;
 
         Slider_Width    : constant SDL.Positive_Dimension := 255;
         Slider_Height   : constant SDL.Positive_Dimension := 12;

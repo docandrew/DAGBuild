@@ -4,7 +4,7 @@ package body DAGBuild.GUI.State is
     procedure Enter_Scope(st : in out UIState)
     is
     begin
-        if st.Curr_Scope = Scope'Last then
+        if st.Curr_Scope = Scope_ID'Last then
             raise Invalid_Scope_Exception with "Exceeded maximum of 256 nested Enter_Scope calls";
         end if;
 

@@ -14,7 +14,7 @@ with SDL.Video.Textures;
 with SDL.Video.Textures.Makers;
 
 -- with DAGBuild.GUI.Settings;
-
+--@TODO change r to st to use scope x,y offset.
 package body DAGBuild.GUI.Widgets is
 
     -- See if mouse position is within a bounded box
@@ -25,11 +25,11 @@ package body DAGBuild.GUI.Widgets is
                         h   : SDL.Positive_Dimension) return Boolean
     is
     begin
-        if  st.Mouse_x < x or
-            st.Mouse_y < y or
-            st.Mouse_x >= x + w or
-            st.Mouse_y >= y + h then
-            return False;
+        if st.Mouse_x < x or
+           st.Mouse_y < y or
+           st.Mouse_x >= x + w or
+           st.Mouse_y >= y + h then
+           return False;
         end if;
 
         return True;

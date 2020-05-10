@@ -19,18 +19,21 @@ package DAGBuild.GUI.State is
     NO_ITEM         : constant ID := 0;
     INVALID_ITEM    : constant ID := -1;
 
-    -- Scope
-    type Scope is new Integer range -1..256;
+    -- Scopes. A scope is a nesting of GUI elements, perhaps when a set of
+    --  elements should be hidden together, or when elements in a sub-window
+    --  need information about their parent to know where to draw themselves.
+    MAX_SCOPES      : constant := 256;
+    type Scope_ID is range -1 .. MAX_SCOPES;
 
-    NO_SCOPE        : constant Scope := 0;
-    INVALID_SCOPE   : constant Scope := -1;
+    NO_SCOPE        : constant Scope_ID := 0;
+    INVALID_SCOPE   : constant Scope_ID := -1;
 
     Arrow_Cursor    : SDL.Inputs.Mice.Cursors.Cursor;
     Text_Cursor     : SDL.Inputs.Mice.Cursors.Cursor;
 
     -- Keep track of last assigned IDs in each scope so we can resume once
     -- out of scope.
-    type Last_ID_List is array (1..Scope'Last) of ID;
+    type Last_ID_List is array (1..Scope_ID'Last) of ID;
 
     -- If moving the cursor left "grows" the selection, i.e. the cursor is to
     -- the left, vs moving the cursor right "grows" the selection
@@ -38,43 +41,47 @@ package DAGBuild.GUI.State is
 
     -- Low-level state of the GUI for rendering and input handling
     --@TODO change tooltip to a regular string.
-    -- @field Renderer is the renderer for the app window
-    -- @field Mouse_x is the x-position of the mouse
-    -- @field Mouse_y is the y-position of the mouse
-    -- @field Mouse_Down is True if the mouse button is being held down
-    -- @field Last_Click is the time the last click occurred, for measuring
+    --@field Renderer is the renderer for the app window
+    --@field Mouse_x is the x-position of the mouse
+    --@field Mouse_y is the y-position of the mouse
+    --@field Mouse_Down is True if the mouse button is being held down
+    --@field Last_Click is the time the last click occurred, for measuring
     --  double clicks
-    -- @field Hot_Item is the ID of the widget we're hovering over
-    -- @field Hot_Scope is the Scope of the widget we're hovering over
-    -- @field Active_Item is the ID of the widget we've interacted with
-    -- @field Active_Scope is the Scope of the widget we've interacted with
-    -- @field Curr_Scope is the current scope we're in
-    -- @field Last_IDs is the last ID we generated for a widget in a given scope
-    -- @field Kbd_Item is the widget with keyboard focus
-    -- @field Kbd_Scope is the scope of the widget with keyboard focus
-    -- @field Kbd_Pressed is the key that was pressed
-    -- @field Kbd_Modifier is shift, ctrl, alt, etc.
-    -- @field Kbd_Heartbeat lets us know if the previously focused widget was
+    --@field Hot_Item is the ID of the widget we're hovering over
+    --@field Hot_Scope is the Scope of the widget we're hovering over
+    --@field Active_Item is the ID of the widget we've interacted with
+    --@field Active_Scope is the Scope of the widget we've interacted with
+    --@field Curr_Scope is the current scope we're in
+    --@field Scope_X_Offset is set when widgets in this scope should be drawn
+    --  (and inputs handled) relative to the scope, perhaps in a sub-window or
+    --  widget group.
+    --@field Scope_Y_Offset. See Scope_X_Offset.
+    --@field Last_IDs is the last ID we generated for a widget in a given scope
+    --@field Kbd_Item is the widget with keyboard focus
+    --@field Kbd_Scope is the scope of the widget with keyboard focus
+    --@field Kbd_Pressed is the key that was pressed
+    --@field Kbd_Modifier is shift, ctrl, alt, etc.
+    --@field Kbd_Heartbeat lets us know if the previously focused widget was
     --  drawn. Used when de-selecting hidden widgets.
-    -- @field Kbd_Text is text entered from the keyboard.
-    -- @field Cursor_Pos is the cursor position within the focused text field.
-    -- @field Selection_Start is the start position of selected text within the
+    --@field Kbd_Text is text entered from the keyboard.
+    --@field Cursor_Pos is the cursor position within the focused text field.
+    --@field Selection_Start is the start position of selected text within the
     --  focused text field.
-    -- @field Selection_End is the end position of selected text within the 
+    --@field Selection_End is the end position of selected text within the 
     --  focused text field.
-    -- @field Word_Select is True if we just double-clicked to select a word,
+    --@field Word_Select is True if we just double-clicked to select a word,
     --  and future cursor drags with the mouse button held down should continue
     --  to select words.
-    -- @field Last_Blink is the time at which the cursor last switched from
+    --@field Last_Blink is the time at which the cursor last switched from
     --  blinking to non-blinking.
-    -- @field Blink_On is True if the cursor is drawn, False otherwise.
-    -- @field Last_Widget is the ID of the last widget handled.
-    -- @field Last_Scope is the scope of the last widget handled.
-    -- @field Hover_Start is the time at which the mouse stopped moving last.
-    -- @field Tooltip is set by the hot widget when it has been hovered over,
+    --@field Blink_On is True if the cursor is drawn, False otherwise.
+    --@field Last_Widget is the ID of the last widget handled.
+    --@field Last_Scope is the scope of the last widget handled.
+    --@field Hover_Start is the time at which the mouse stopped moving last.
+    --@field Tooltip is set by the hot widget when it has been hovered over,
     --  and then rendered later (so it's on top of other drawn widgets).
-    -- @field Theme is the currently used color theme.
-    -- @field Done is set to True if we are exiting the program.
+    --@field Theme is the currently used color theme.
+    --@field Done is set to True if we are exiting the program.
 
     type UIState is
     record
@@ -86,16 +93,19 @@ package DAGBuild.GUI.State is
         Last_Click      : Ada.Real_Time.Time;
 
         Hot_Item        : ID;
-        Hot_Scope       : Scope;
+        Hot_Scope       : Scope_ID;
 
         Active_Item     : ID;
-        Active_Scope    : Scope;
+        Active_Scope    : Scope_ID;
 
-        Curr_Scope      : Scope := NO_SCOPE;
+        Curr_Scope      : Scope_ID := NO_SCOPE;
+        Scope_X_Offset  : SDL.Natural_Coordinate := 0;
+        Scope_Y_Offset  : SDL.Natural_Coordinate := 0;
+
         Last_IDs        : Last_ID_List := (others => NO_ITEM);
 
         Kbd_Item        : ID := NO_ITEM;
-        Kbd_Scope       : Scope := NO_SCOPE;
+        Kbd_Scope       : Scope_ID := NO_SCOPE;
 
         Kbd_Pressed     : SDL.Events.Keyboards.Key_Codes;
         Kbd_Modifier    : SDL.Events.Keyboards.Key_Modifiers;
@@ -112,7 +122,7 @@ package DAGBuild.GUI.State is
         Blink_On        : Boolean := True;
 
         Last_Widget     : ID;
-        Last_Scope      : Scope;
+        Last_Scope      : Scope_ID;
 
         Hover_Start     : Ada.Real_Time.Time;
         Tooltip         : Unbounded_String;
