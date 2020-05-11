@@ -19,7 +19,7 @@ private
                          h   : SDL.Positive_Dimension) return Boolean;
 
     -- Render a single line
-    procedure Draw_Line (r      : in out SDL.Video.Renderers.Renderer;
+    procedure Draw_Line (st     : in out DAGBuild.GUI.State.UIState;
                          x1     : SDL.Coordinate;
                          y1     : SDL.Coordinate;
                          x2     : SDL.Coordinate;
@@ -27,7 +27,7 @@ private
                          Color  : SDL.Video.Palettes.Colour);
 
     -- Render a filled SDL Rectangle
-    procedure Draw_Rect (r      : in out SDL.Video.Renderers.Renderer;
+    procedure Draw_Rect (st     : in out DAGBuild.GUI.State.UIState;
                          x      : SDL.Coordinate;
                          y      : SDL.Coordinate;
                          w      : SDL.Positive_Dimension;
@@ -35,7 +35,7 @@ private
                          Color  : SDL.Video.Palettes.Colour);
 
     -- Render an outlined SDL Rectangle
-    procedure Outline_Rect (r       : in out SDL.Video.Renderers.Renderer;
+    procedure Outline_Rect (st      : in out DAGBuild.GUI.State.UIState;
                             x       : SDL.Coordinate;
                             y       : SDL.Coordinate;
                             w       : SDL.Positive_Dimension;
@@ -53,7 +53,7 @@ private
     -- @field BG_Color is the background color to use
     -- @field Padding surrounds the text with pixels of the background color
     --  on all sides.
-    procedure Draw_Text (r          : in out SDL.Video.Renderers.Renderer;
+    procedure Draw_Text (st         : in out DAGBuild.GUI.State.UIState;
                          Text       : String;
                          x          : SDL.Coordinate;
                          y          : SDL.Coordinate;

@@ -378,14 +378,14 @@ package body DAGBuild.GUI.Widgets.Text_Field is
             st.Selection_End    := st.Selection_Start;
         end if;
 
-        Draw_Rect (st.Renderer,
+        Draw_Rect (st,
                    x,
                    y,
                    Field_Width,
                    Field_Height,
                    st.Theme.Input_background);
 
-        Outline_Rect (st.Renderer,
+        Outline_Rect (st,
                       x,
                       y,
                       Field_Width,
@@ -394,7 +394,7 @@ package body DAGBuild.GUI.Widgets.Text_Field is
 
         -- if we have keyboard focus, show it and update heartbeat
         if st.Kbd_Item = id and st.Kbd_Scope = Scope then
-            Outline_Rect(st.Renderer,
+            Outline_Rect(st,
                         x,
                         y,
                         Field_Width,
@@ -423,7 +423,7 @@ package body DAGBuild.GUI.Widgets.Text_Field is
         begin
             if not (st.Kbd_Item = id and st.Kbd_Scope = scope) then
                 -- if we aren't active, then just render the text in one fell swoop
-                Draw_Text (r        => st.Renderer,
+                Draw_Text (st       => st,
                            Text     => UBS.To_String(Text),
                            x        => Text_x,
                            y        => y + 8,
@@ -447,14 +447,14 @@ package body DAGBuild.GUI.Widgets.Text_Field is
                             Text_BG_Color := st.Theme.Input_Background;
                         end if;
 
-                        Draw_Text (r     => st.Renderer,
-                                Text     => UBS.Slice(Text, i, i),
-                                x        => Text_x,
-                                y        => y + 8,
-                                w        => w,
-                                h        => h,
-                                Color    => Text_FG_Color,
-                                BG_Color => Text_BG_Color);
+                        Draw_Text (st     => st,
+                                   Text     => UBS.Slice(Text, i, i),
+                                   x        => Text_x,
+                                   y        => y + 8,
+                                   w        => w,
+                                   h        => h,
+                                   Color    => Text_FG_Color,
+                                   BG_Color => Text_BG_Color);
                     
                         -- if we just clicked here, and we just rendered a character
                         -- whose width takes us past where we clicked, then update
@@ -575,7 +575,7 @@ package body DAGBuild.GUI.Widgets.Text_Field is
 
                 -- Draw the cursor at appropriate position when not blinked
                 if st.Blink_On then
-                    Draw_Line (r        => st.Renderer,
+                    Draw_Line (st       => st,
                                x1       => Cursor_x,
                                y1       => y + 2,
                                x2       => Cursor_x,

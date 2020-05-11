@@ -83,7 +83,7 @@ package body DAGBuild.GUI.Widgets.Button is
 
         -- if we have keyboard focus, show it and update heartbeat
         if st.Kbd_Item = id and st.Kbd_Scope = Scope then
-            Outline_Rect (st.Renderer,
+            Outline_Rect (st,
                           x - 2,
                           y - 2,
                           Button_Width + 6,
@@ -94,7 +94,7 @@ package body DAGBuild.GUI.Widgets.Button is
         end if;
         
         -- Render a button shadow
-        Draw_Rect (st.Renderer,
+        Draw_Rect (st,
                    x + Button_Shadow_Offset,
                    y + Button_Shadow_Offset,
                    Button_Width,
@@ -104,7 +104,7 @@ package body DAGBuild.GUI.Widgets.Button is
         if st.Hot_Item = id and st.Hot_Scope = Scope then
             if st.Active_Item = id and st.Active_Scope = Scope then
                 -- Hot and Active button - depress
-                Draw_Rect (st.Renderer,
+                Draw_Rect (st,
                            x + 2,
                            y + 2,
                            Button_Width,
@@ -112,7 +112,7 @@ package body DAGBuild.GUI.Widgets.Button is
                            st.Theme.Button_HoverBackground);
 
                 -- Draw Label
-                Draw_Text (r        => st.Renderer,
+                Draw_Text (st       => st,
                            Text     => Label,
                            x        => Label_x + 2,
                            y        => Label_y + 2,
@@ -123,14 +123,14 @@ package body DAGBuild.GUI.Widgets.Button is
                 --@TODO play audio of label for accessibility
             else
                 -- Hot but not Active - 
-                Draw_Rect(st.Renderer,
+                Draw_Rect(st,
                           x,
                           y,
                           Button_Width,
                           Button_Height,
                           st.Theme.Button_HoverBackground);
 
-                Draw_Text (r        => st.Renderer,
+                Draw_Text (st       => st,
                            Text     => Label,
                            x        => Label_x,
                            y        => Label_y,
@@ -142,14 +142,14 @@ package body DAGBuild.GUI.Widgets.Button is
             end if;
         else
             -- Not hot, could be active
-            Draw_Rect (st.Renderer,
+            Draw_Rect (st,
                        x,
                        y,
                        Button_Width,
                        Button_Height,
                        st.Theme.Button_Background);
 
-            Draw_Text (r        => st.Renderer,
+            Draw_Text (st       => st,
                        Text     => Label,
                        x        => Label_x,
                        y        => Label_y,

@@ -135,12 +135,24 @@ package DAGBuild.GUI.State is
     NO_KEY : constant SDL.Events.Keyboards.Key_Codes := SDL.Events.Keyboards.Key_Codes(0);
 
     -- Enter a new Widget scope
-    procedure Enter_Scope(st : in out UIState);
+    --@field st is the UI state for the application
+    --@field Scope_X_Offset should be the x-coordinate for the parent widget,
+    --  if new widgets should be positioned relative to the parent. I.e. a
+    --  sub-window or dialog box.
+    --@field Scope_Y_Offset see Scope_X_Offset.
+    procedure Enter_Scope (st               : in out UIState;
+                           Scope_X_Offset   : SDL.Natural_Coordinate := 0;
+                           Scope_Y_Offset   : SDL.Natural_Coordinate := 0);
+
 
     -- Exit a Widget scope
-    procedure Exit_Scope(st : in out UIState);
+    --@note if a Scope_X_Offset and/or Scope_Y_Offset was provided when this
+    -- scope was first entered, they must be provided here.
+    procedure Exit_Scope (st                : in out UIState;
+                          Scope_X_Offset    : SDL.Natural_Coordinate := 0;
+                          Scope_Y_Offset    : SDL.Natural_Coordinate := 0);
 
     -- Generate the next ID for the current scope
-    function Next_ID(st : in out UIState) return ID;
+    function Next_ID (st : in out UIState) return ID;
 
 end DAGBuild.GUI.State;

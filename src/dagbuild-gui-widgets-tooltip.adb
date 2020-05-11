@@ -16,7 +16,7 @@ package body DAGBuild.GUI.Widgets.Tooltip is
         w : SDL.Dimension;
         h : SDL.Dimension;
     begin
-        Draw_Text (r        => st.Renderer,
+        Draw_Text (st       => st,
                    Text     => UBS.To_String (st.Tooltip),
                    x        => st.Mouse_x + Offset_X,
                    y        => st.Mouse_y + Offset_Y,
@@ -26,7 +26,7 @@ package body DAGBuild.GUI.Widgets.Tooltip is
                    BG_Color => st.Theme.EditorSuggestWidget_Background,
                    Padding  => 10);
 
-        Outline_Rect (st.Renderer,
+        Outline_Rect (st,
                       st.Mouse_x + Offset_X,
                       st.Mouse_y + Offset_Y,
                       w,

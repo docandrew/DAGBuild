@@ -45,7 +45,7 @@ package body DAGBuild.GUI.Widgets.Slider is
 
         -- if we have keyboard focus, show it and update heartbeat
         if st.Kbd_Item = id and st.Kbd_Scope = Scope then
-            Outline_Rect(st.Renderer,
+            Outline_Rect(st,
                         x - 2,
                         y - 2,
                         Button_Width + 4,
@@ -56,7 +56,7 @@ package body DAGBuild.GUI.Widgets.Slider is
         end if;
 
         -- Draw the scrollbar
-        Draw_Rect (st.Renderer,
+        Draw_Rect (st,
                    x + (Button_Width - Slider_Width) / 2,
                    y,
                    Slider_Width,
@@ -66,14 +66,14 @@ package body DAGBuild.GUI.Widgets.Slider is
         -- Draw the button
         if (st.Hot_Item = id and st.Hot_Scope = Scope) or 
             (st.Active_Item = id and st.Active_Scope = Scope) then
-            Draw_Rect ( st.Renderer,
+            Draw_Rect ( st,
                         x,
                         y + ypos,
                         Button_Width,
                         Button_Height,
                         st.Theme.ScrollbarSlider_activeBackground);
         else
-            Draw_Rect ( st.Renderer,
+            Draw_Rect ( st,
                         x,
                         y + ypos,
                         Button_Width,
@@ -196,18 +196,18 @@ package body DAGBuild.GUI.Widgets.Slider is
 
         -- if we have keyboard focus, show it and update heartbeat
         if st.Kbd_Item = id and st.Kbd_Scope = Scope then
-            Outline_Rect(st.Renderer,
-                        x - 2,
-                        y - 2,
-                        Slider_Width + 4,
-                        Button_Height + 4,
-                        st.Theme.InputOption_activeBorder);
+            Outline_Rect (st,
+                          x - 2,
+                          y - 2,
+                          Slider_Width + 4,
+                          Button_Height + 4,
+                          st.Theme.InputOption_activeBorder);
 
             st.Kbd_Heartbeat := True;
         end if;
 
         -- Draw the slider itself
-        Draw_Rect (st.Renderer,
+        Draw_Rect (st,
                    x,
                    y + (Button_Height - Slider_Height) / 2,
                    Slider_Width,
@@ -217,14 +217,14 @@ package body DAGBuild.GUI.Widgets.Slider is
         -- Draw the button
         if (st.Hot_Item = id and st.Hot_Scope = Scope) or 
             (st.Active_Item = id and st.Active_Scope = Scope) then
-            Draw_Rect ( st.Renderer,
+            Draw_Rect ( st,
                         x + xpos,
                         y,
                         Button_Width,
                         Button_Height,
                         st.Theme.ScrollbarSlider_activeBackground);
         else
-            Draw_Rect ( st.Renderer,
+            Draw_Rect ( st,
                         x + xpos,
                         y,
                         Button_Width,
@@ -306,4 +306,5 @@ package body DAGBuild.GUI.Widgets.Slider is
 
         return False;
     end Horizontal_Slider;
+    
 end DAGBuild.GUI.Widgets.Slider;

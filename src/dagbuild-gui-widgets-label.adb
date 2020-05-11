@@ -33,7 +33,7 @@ package body DAGBuild.GUI.Widgets.Label is
         h : SDL.Dimension;
     begin
         if BG_Color.Alpha /= 0 then
-            Draw_Rect (st.Renderer,
+            Draw_Rect (st,
                        x,
                        y,
                        Field_Width,
@@ -41,7 +41,7 @@ package body DAGBuild.GUI.Widgets.Label is
                        st.Theme.Input_Background);
         end if;
 
-        Draw_Text (r        => st.Renderer,
+        Draw_Text (st       => st,
                    Text     => Text, 
                    x        => x + Text_Draw_Offset,
                    y        => y + 8,

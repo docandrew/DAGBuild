@@ -53,7 +53,7 @@ package body DAGBuild.GUI.Widgets.Checkbox is
 
         -- if we have keyboard focus, show it and update heartbeat
         if st.Kbd_Item = id and st.Kbd_Scope = Scope then
-            Outline_Rect (st.Renderer,
+            Outline_Rect (st,
                           x - 2,
                           y + Offset_y - 2,
                           Button_Width + 4,
@@ -65,7 +65,7 @@ package body DAGBuild.GUI.Widgets.Checkbox is
         
         if st.Hot_Item = id and st.Hot_Scope = Scope then
             -- Hot - highlight background
-            Draw_Rect (st.Renderer,
+            Draw_Rect (st,
                        x,
                        y + Offset_y,
                        Button_Width,
@@ -79,7 +79,7 @@ package body DAGBuild.GUI.Widgets.Checkbox is
             end if;
         else
             -- Not hot, could be active. Draw normal background.
-            Draw_Rect (st.Renderer,
+            Draw_Rect (st,
                        x,
                        y + Offset_y,
                        Button_Width,
@@ -89,7 +89,7 @@ package body DAGBuild.GUI.Widgets.Checkbox is
 
         -- if checked, or previewing and not checked, then draw the inner square.
         if Checked xor Preview then
-            Draw_Rect (st.Renderer,
+            Draw_Rect (st,
                        x + 4,
                        y + Offset_y + 4,
                        Button_Width - 8,
@@ -99,7 +99,7 @@ package body DAGBuild.GUI.Widgets.Checkbox is
 
         -- Always draw label if there is one.
         if Label'Length /= 0 then
-            Draw_Text (r        => st.Renderer,
+            Draw_Text (st       => st,
                        Text     => Label,
                        x        => Label_x,
                        y        => Label_y,
